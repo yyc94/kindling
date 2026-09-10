@@ -4,6 +4,7 @@
   import pressTokens from "../../styles/press/tokens.json";
   import type { Tag } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     projectId,
@@ -125,7 +126,7 @@
 
 <div class="space-y-3">
   <div class="flex items-center justify-between">
-    <h3 class="text-press-ui font-medium text-press-text">Tags</h3>
+    <h3 class="text-press-ui font-medium text-press-text">{t("Tags")}</h3>
     <button
       type="button"
       onclick={() => openCreateForm()}
@@ -133,16 +134,16 @@
       disabled={!!editingTag}
     >
       <Plus class="w-3 h-3" />
-      New tag
+      {t("New tag")}
     </button>
   </div>
 
   {#if loading}
-    <p class="text-press-eyebrow text-press-muted">Loading tags...</p>
+    <p class="text-press-eyebrow text-press-muted">{t("Loading tags...")}</p>
   {:else if error}
     <p class="text-press-eyebrow text-press-error">{error}</p>
   {:else if tags.length === 0 && !editingTag}
-    <p class="text-press-eyebrow text-press-muted">No tags defined yet.</p>
+    <p class="text-press-eyebrow text-press-muted">{t("No tags defined yet.")}</p>
   {:else}
     <div class="space-y-0.5">
       {#each getRootTags() as tag}
@@ -163,29 +164,29 @@
             <div
               class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <Tooltip text="Add child" position="bottom">
+              <Tooltip text={t("Add child")} position="bottom">
                 <button
                   onclick={() => openCreateForm(tag.id)}
                   class="p-0.5 text-press-muted hover:text-press-text"
-                  aria-label="Add child tag"
+                  aria-label={t("Add child tag")}
                 >
                   <Plus class="w-3 h-3" />
                 </button>
               </Tooltip>
-              <Tooltip text="Edit" position="bottom">
+              <Tooltip text={t("Edit")} position="bottom">
                 <button
                   onclick={() => openEditForm(tag)}
                   class="p-0.5 text-press-muted hover:text-press-text"
-                  aria-label="Edit tag"
+                  aria-label={t("Edit tag")}
                 >
                   <Pencil class="w-3 h-3" />
                 </button>
               </Tooltip>
-              <Tooltip text="Delete" position="bottom">
+              <Tooltip text={t("Delete")} position="bottom">
                 <button
                   onclick={() => deleteTag(tag.id)}
                   class="p-0.5 text-press-muted hover:text-press-error"
-                  aria-label="Delete tag"
+                  aria-label={t("Delete tag")}
                 >
                   <Trash2 class="w-3 h-3" />
                 </button>
@@ -215,30 +216,30 @@
                       class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       {#if grandchildren.length === 0}
-                        <Tooltip text="Add child" position="bottom">
+                        <Tooltip text={t("Add child")} position="bottom">
                           <button
                             onclick={() => openCreateForm(child.id)}
                             class="p-0.5 text-press-muted hover:text-press-text"
-                            aria-label="Add child tag"
+                            aria-label={t("Add child tag")}
                           >
                             <Plus class="w-3 h-3" />
                           </button>
                         </Tooltip>
                       {/if}
-                      <Tooltip text="Edit" position="bottom">
+                      <Tooltip text={t("Edit")} position="bottom">
                         <button
                           onclick={() => openEditForm(child)}
                           class="p-0.5 text-press-muted hover:text-press-text"
-                          aria-label="Edit tag"
+                          aria-label={t("Edit tag")}
                         >
                           <Pencil class="w-3 h-3" />
                         </button>
                       </Tooltip>
-                      <Tooltip text="Delete" position="bottom">
+                      <Tooltip text={t("Delete")} position="bottom">
                         <button
                           onclick={() => deleteTag(child.id)}
                           class="p-0.5 text-press-muted hover:text-press-error"
-                          aria-label="Delete tag"
+                          aria-label={t("Delete tag")}
                         >
                           <Trash2 class="w-3 h-3" />
                         </button>
@@ -263,20 +264,20 @@
                           <div
                             class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <Tooltip text="Edit" position="bottom">
+                            <Tooltip text={t("Edit")} position="bottom">
                               <button
                                 onclick={() => openEditForm(gc)}
                                 class="p-0.5 text-press-muted hover:text-press-text"
-                                aria-label="Edit tag"
+                                aria-label={t("Edit tag")}
                               >
                                 <Pencil class="w-3 h-3" />
                               </button>
                             </Tooltip>
-                            <Tooltip text="Delete" position="bottom">
+                            <Tooltip text={t("Delete")} position="bottom">
                               <button
                                 onclick={() => deleteTag(gc.id)}
                                 class="p-0.5 text-press-muted hover:text-press-error"
-                                aria-label="Delete tag"
+                                aria-label={t("Delete tag")}
                               >
                                 <Trash2 class="w-3 h-3" />
                               </button>
@@ -299,7 +300,7 @@
     <div class="bg-press-sunken rounded-lg p-3 space-y-3 border border-press-accent">
       <div class="flex items-center justify-between">
         <span class="text-press-ui font-medium text-press-text">
-          {editMode === "create" ? "New Tag" : "Edit Tag"}
+          {t(editMode === "create" ? "New Tag" : "Edit Tag")}
         </span>
         <button onclick={cancelEdit} class="p-1 text-press-muted hover:text-press-text">
           <X class="w-4 h-4" />
@@ -307,19 +308,21 @@
       </div>
 
       <div>
-        <label class="block text-press-eyebrow text-press-muted mb-1" for="tag-name">Name</label>
+        <label class="block text-press-eyebrow text-press-muted mb-1" for="tag-name"
+          >{t("Name")}</label
+        >
         <input
           id="tag-name"
           type="text"
           bind:value={editingTag.name}
           class={inputClass}
-          placeholder="e.g. Flashback, Action, Romance..."
+          placeholder={t("e.g. Flashback, Action, Romance...")}
           disabled={saving}
         />
       </div>
 
       <div>
-        <label class="block text-press-eyebrow text-press-muted mb-1">Color</label>
+        <label class="block text-press-eyebrow text-press-muted mb-1">{t("Color")}</label>
         <div class="flex flex-wrap gap-1.5">
           <button
             onclick={() => {
@@ -329,7 +332,7 @@
             class:border-press-accent={!editingTag.color}
             class:border-transparent={!!editingTag.color}
             style:background-color="var(--color-surface-sunken)"
-            aria-label="No color"
+            aria-label={t("No color")}
           >
             {#if !editingTag.color}
               <Check class="w-3 h-3 text-press-muted" />
@@ -345,7 +348,7 @@
               class:border-press-on-accent={editingTag.color === color}
               class:border-transparent={editingTag.color !== color}
               style:background-color={color}
-              aria-label={preset.name}
+              aria-label={t(preset.name)}
             >
               {#if editingTag.color === color}
                 <Check class="w-3 h-3 text-press-on-accent" />
@@ -361,7 +364,7 @@
           class="px-3 py-1.5 text-press-ui text-press-muted hover:text-press-text"
           disabled={saving}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           onclick={saveTag}
@@ -373,7 +376,7 @@
           {:else}
             <Check class="w-3.5 h-3.5" />
           {/if}
-          {editMode === "create" ? "Add" : "Save"}
+          {t(editMode === "create" ? "Add" : "Save")}
         </button>
       </div>
     </div>

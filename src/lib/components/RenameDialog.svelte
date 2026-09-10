@@ -1,6 +1,7 @@
 <script lang="ts">
   import { X, Loader2 } from "lucide-svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     title,
@@ -30,7 +31,7 @@
   async function handleSave() {
     const trimmedName = newName.trim();
     if (!trimmedName) {
-      error = "Name cannot be empty";
+      error = t("Name cannot be empty");
       return;
     }
 
@@ -41,13 +42,14 @@
       await onSave(trimmedName);
       onClose();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to rename";
+      error = e instanceof Error ? e.message : t("Failed to rename");
     } finally {
       saving = false;
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return;
     if (event.key === "Escape") {
       onClose();
     } else if (event.key === "Enter" && !saving) {
@@ -83,12 +85,12 @@
       <h2 id="rename-dialog-title" class="text-press-body-lg font-medium text-press-text">
         {title}
       </h2>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="rename-close"
         >
           <X class="w-5 h-5" />
@@ -99,7 +101,7 @@
     <!-- Content -->
     <div class="p-4">
       <label for="rename-input" class="block text-press-ui font-medium text-press-muted mb-2">
-        Name
+        {t("Name")}
       </label>
       <input
         id="rename-input"
@@ -107,7 +109,7 @@
         bind:value={newName}
         type="text"
         class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
-        placeholder="Enter name..."
+        placeholder={t("Enter name...")}
         disabled={saving}
       />
       {#if error}
@@ -123,7 +125,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         disabled={saving}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         data-testid="rename-save"
@@ -135,7 +137,7 @@
         {#if saving}
           <Loader2 class="w-4 h-4 animate-spin" />
         {:else}
-          Save
+          {t("Save")}
         {/if}
       </button>
     </div>

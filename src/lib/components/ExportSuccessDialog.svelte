@@ -10,6 +10,7 @@
   import { X, CheckCircle, FolderOpen } from "lucide-svelte";
   import type { ExportResult } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     result,
@@ -59,14 +60,14 @@
     <!-- Header -->
     <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
       <h2 id="export-success-dialog-title" class="text-press-body-lg font-medium text-press-text">
-        Export Complete
+        {t("Export Complete")}
       </h2>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
         >
           <X class="w-5 h-5" />
         </button>
@@ -79,22 +80,34 @@
       <div class="flex items-start gap-3">
         <CheckCircle class="w-6 h-6 text-press-success flex-shrink-0 mt-0.5" />
         <div>
-          <p class="text-press-text font-medium">Successfully exported:</p>
+          <p class="text-press-text font-medium">{t("Successfully exported:")}</p>
           <ul class="mt-2 space-y-1 text-press-muted text-press-ui">
             {#if result.chapters_exported > 0}
-              <li>{result.chapters_exported} chapter{result.chapters_exported === 1 ? "" : "s"}</li>
+              <li>
+                {t(result.chapters_exported === 1 ? "{count} chapter" : "{count} chapters", {
+                  count: result.chapters_exported,
+                })}
+              </li>
             {/if}
             {#if result.scenes_exported > 0}
-              <li>{result.scenes_exported} scene{result.scenes_exported === 1 ? "" : "s"}</li>
+              <li>
+                {t(result.scenes_exported === 1 ? "{count} scene" : "{count} scenes", {
+                  count: result.scenes_exported,
+                })}
+              </li>
             {/if}
-            <li>{result.files_created} file{result.files_created === 1 ? "" : "s"} created</li>
+            <li>
+              {t(result.files_created === 1 ? "{count} file created" : "{count} files created", {
+                count: result.files_created,
+              })}
+            </li>
           </ul>
         </div>
       </div>
 
       <!-- Location -->
       <div>
-        <p class="text-press-ui font-medium text-press-muted mb-1">Location:</p>
+        <p class="text-press-ui font-medium text-press-muted mb-1">{t("Location:")}</p>
         <p class="text-press-ui text-press-text break-all bg-press-sunken rounded px-2 py-1.5">
           {result.output_path}
         </p>
@@ -109,14 +122,14 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors flex items-center gap-2"
       >
         <FolderOpen class="w-4 h-4" />
-        Open Folder
+        {t("Open Folder")}
       </button>
       <button
         type="button"
         onclick={onClose}
         class="px-4 py-2 text-press-ui bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
       >
-        Close
+        {t("Close")}
       </button>
     </div>
   </div>

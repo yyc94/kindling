@@ -20,6 +20,7 @@
   import FieldDefinitionManager from "./FieldDefinitionManager.svelte";
   import TagManager from "./TagManager.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     onClose,
@@ -47,7 +48,7 @@
       dailyGoal = stats.daily_goal;
       goalLoaded = true;
     } catch (e) {
-      error = `Could not load daily goal: ${String(e)}`;
+      error = t("Could not load daily goal: {error}", { error: String(e) });
     }
   });
   let saving = $state(false);
@@ -62,7 +63,7 @@
     try {
       const parsedWordTarget = wordTarget.trim().length ? Number(wordTarget.trim()) : null;
       if (parsedWordTarget !== null && Number.isNaN(parsedWordTarget)) {
-        throw new Error("Word target must be a number");
+        throw new Error(t("Word target must be a number"));
       }
 
       if (
@@ -72,7 +73,7 @@
           dailyGoal < 0 ||
           dailyGoal > 1000000)
       ) {
-        throw new Error("Daily goal must be a whole number between 0 and 1,000,000");
+        throw new Error(t("Daily goal must be a whole number between 0 and 1,000,000"));
       }
 
       // Convert empty strings to null for optional fields
@@ -99,6 +100,7 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return;
     if (event.key === "Escape") {
       onClose();
     } else if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !saving) {
@@ -134,15 +136,15 @@
       <div class="flex items-center gap-2">
         <BookOpen class="w-5 h-5 text-press-accent-text" />
         <h2 id="settings-dialog-title" class="text-press-body-lg font-medium text-press-text">
-          Project Settings
+          {t("Project Settings")}
         </h2>
       </div>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="project-settings-close"
         >
           <X class="w-5 h-5" />
@@ -153,57 +155,57 @@
     <!-- Content -->
     <div class="p-4 space-y-4 overflow-y-auto flex-1">
       <p class="text-press-ui text-press-muted">
-        These settings are specific to <strong class="text-press-text"
-          >{currentProject.value?.name}</strong
-        >.
+        {t("These settings are specific to {name}.", { name: currentProject.value?.name ?? "" })}
       </p>
 
       <!-- Pen Name -->
       <div>
         <label for="author-pen-name" class="block text-press-ui text-press-muted mb-1">
-          Pen Name <span class="text-press-muted">(optional)</span>
+          {t("Pen Name")} <span class="text-press-muted">{t("(optional)")}</span>
         </label>
         <input
           id="author-pen-name"
           type="text"
           bind:value={authorPenName}
-          placeholder="Leave blank to use your author name"
+          placeholder={t("Leave blank to use your author name")}
           disabled={saving}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
         />
         <p class="text-press-eyebrow text-press-muted mt-1">
-          If provided, this will be used as the byline on title pages instead of your author name.
+          {t(
+            "If provided, this will be used as the byline on title pages instead of your author name."
+          )}
         </p>
       </div>
 
       <!-- Genre -->
       <div>
         <label for="genre" class="block text-press-ui text-press-muted mb-1">
-          Genre <span class="text-press-muted">(optional)</span>
+          {t("Genre")} <span class="text-press-muted">{t("(optional)")}</span>
         </label>
         <input
           id="genre"
           type="text"
           bind:value={genre}
-          placeholder="e.g., Literary Fiction, Science Fiction, Mystery"
+          placeholder={t("e.g., Literary Fiction, Science Fiction, Mystery")}
           disabled={saving}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
         />
         <p class="text-press-eyebrow text-press-muted mt-1">
-          Genre will be displayed on manuscript title pages.
+          {t("Genre will be displayed on manuscript title pages.")}
         </p>
       </div>
 
       <!-- Description -->
       <div>
         <label for="project-description" class="block text-press-ui text-press-muted mb-1">
-          Project Description <span class="text-press-muted">(optional)</span>
+          {t("Project Description")} <span class="text-press-muted">{t("(optional)")}</span>
         </label>
         <textarea
           id="project-description"
           rows="4"
           bind:value={description}
-          placeholder="Short summary or notes about this project"
+          placeholder={t("Short summary or notes about this project")}
           disabled={saving}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent resize-none"
         ></textarea>
@@ -211,7 +213,7 @@
 
       <div>
         <label for="daily-writing-goal" class="block text-press-ui text-press-muted mb-1"
-          >Daily writing goal</label
+          >{t("Daily writing goal")}</label
         >
         <input
           id="daily-writing-goal"
@@ -225,15 +227,16 @@
           aria-describedby="daily-goal-help"
         />
         <p id="daily-goal-help" class="text-press-eyebrow text-press-muted mt-1">
-          Net words added per day in this project. Set to 0 to turn off the goal. Changes apply
-          today; earlier streak days keep their original goals.
+          {t(
+            "Net words added per day in this project. Set to 0 to turn off the goal. Changes apply today; earlier streak days keep their original goals."
+          )}
         </p>
       </div>
 
       <!-- Word Target -->
       <div>
         <label for="word-target" class="block text-press-ui text-press-muted mb-1">
-          Word Target <span class="text-press-muted">(optional)</span>
+          {t("Word Target")} <span class="text-press-muted">{t("(optional)")}</span>
         </label>
         <input
           id="word-target"
@@ -241,7 +244,7 @@
           min="0"
           inputmode="numeric"
           bind:value={wordTarget}
-          placeholder="e.g., 80000"
+          placeholder={t("e.g., 80000")}
           disabled={saving}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
         />
@@ -261,10 +264,11 @@
         )}
 
         <div class="border-t border-press-border pt-4">
-          <h3 class="text-press-ui font-medium text-press-text mb-3">Custom Fields</h3>
+          <h3 class="text-press-ui font-medium text-press-text mb-3">{t("Custom Fields")}</h3>
           <p class="text-press-eyebrow text-press-muted mb-3">
-            Define typed fields for your reference entities. These replace free-form key/value
-            attributes with structured inputs.
+            {t(
+              "Define typed fields for your reference entities. These replace free-form key/value attributes with structured inputs."
+            )}
           </p>
           <div class="space-y-4">
             {#each enabledTypes as refType}
@@ -273,7 +277,7 @@
                 <FieldDefinitionManager
                   projectId={currentProject.value.id}
                   entityType={REFERENCE_FIELD_TYPES[refType]}
-                  entityLabel={mapping.label}
+                  entityLabel={t(mapping.label)}
                 />
               {/if}
             {/each}
@@ -295,7 +299,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         disabled={saving}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         type="button"
@@ -305,9 +309,9 @@
       >
         {#if saving}
           <Loader2 class="w-4 h-4 animate-spin" />
-          Saving...
+          {t("Saving...")}
         {:else}
-          Save
+          {t("Save")}
         {/if}
       </button>
     </div>

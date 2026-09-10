@@ -71,6 +71,7 @@
   import SnapshotsPanel from "./SnapshotsPanel.svelte";
   import Tooltip from "./Tooltip.svelte";
   import BrandWordmark from "./BrandWordmark.svelte";
+  import { t } from "../i18n.svelte";
 
   import type { ComponentType } from "svelte";
 
@@ -520,7 +521,9 @@
     } catch (e) {
       console.error("Failed to load chapters:", e);
       ui.showError(
-        `Failed to load chapters: ${typeof e === "string" ? e : ((e as Error)?.message ?? String(e))}`
+        t("Failed to load chapters: {error}", {
+          error: typeof e === "string" ? e : ((e as Error)?.message ?? String(e)),
+        })
       );
     } finally {
       if (requestId === chaptersRequestId) {
@@ -705,6 +708,7 @@
   }
 
   function handleCreateKeydown(e: KeyboardEvent) {
+    if (e.isComposing) return;
     if (e.key === "Enter") {
       if (creatingChapter) createChapter();
       else if (creatingPart) createPart();
@@ -761,7 +765,11 @@
         type: "chapter",
         id: chapter.id,
         title: chapter.title,
-        message: `This will delete "${chapter.title}" with ${counts.scene_count} scene${counts.scene_count !== 1 ? "s" : ""} and ${counts.beat_count} beat${counts.beat_count !== 1 ? "s" : ""}.`,
+        message: t('This will delete "{title}". Scenes: {scenes}; beats: {beats}.', {
+          title: chapter.title,
+          scenes: counts.scene_count,
+          beats: counts.beat_count,
+        }),
       };
     } catch (e) {
       console.error("Failed to get content counts:", e);
@@ -789,7 +797,10 @@
         type: "scene",
         id: scene.id,
         title: scene.title,
-        message: `This will delete "${scene.title}" with ${beatCount} beat${beatCount !== 1 ? "s" : ""}.`,
+        message: t('This will delete "{title}". Beats: {beats}.', {
+          title: scene.title,
+          beats: beatCount,
+        }),
       };
     } catch (e) {
       console.error("Failed to get beat count:", e);
@@ -1079,7 +1090,7 @@
 
     return [
       {
-        label: "Rename",
+        label: t("Rename"),
         icon: Pencil,
         action: () => {
           renameDialog = {
@@ -1091,29 +1102,29 @@
         disabled: isLocked,
       },
       {
-        label: "Planning",
+        label: t("Planning"),
         action: () => {},
         disabled: isLocked,
         children: [
           {
-            label: "Fixed",
+            label: t("Fixed"),
             action: () => setPlanningStatus(type, item, "fixed"),
             disabled: isLocked || (item as Chapter & Scene).planning_status === "fixed",
           },
           {
-            label: "Flexible",
+            label: t("Flexible"),
             action: () => setPlanningStatus(type, item, "flexible"),
             disabled: isLocked || (item as Chapter & Scene).planning_status === "flexible",
           },
           {
-            label: "Undefined",
+            label: t("Undefined"),
             action: () => setPlanningStatus(type, item, "undefined"),
             disabled: isLocked || (item as Chapter & Scene).planning_status === "undefined",
           },
         ],
       },
       {
-        label: "Duplicate",
+        label: t("Duplicate"),
         icon: Copy,
         action: () => handleDuplicate(type, item.id),
       },
@@ -1121,7 +1132,7 @@
       ...(type === "chapter"
         ? [
             {
-              label: isPart ? `Convert to ${chapterLabel}` : `Convert to ${partLabel}`,
+              label: t("Convert to {type}", { type: t(isPart ? chapterLabel : partLabel) }),
               icon: BookOpen,
               action: () => handleTogglePart(item.id, !isPart),
               disabled: isLocked,
@@ -1130,18 +1141,18 @@
         : []),
       { divider: true, label: "", action: () => {} },
       {
-        label: isLocked ? "Unlock" : "Lock",
+        label: t(isLocked ? "Unlock" : "Lock"),
         icon: isLocked ? Unlock : Lock,
         action: () => handleToggleLock(type, item.id, isLocked),
       },
       {
-        label: "Archive",
+        label: t("Archive"),
         icon: Archive,
         action: () => handleArchive(type, item.id),
         disabled: isLocked,
       },
       {
-        label: "Export",
+        label: t("Export"),
         icon: Download,
         action: () => {
           exportDialog = {
@@ -1153,7 +1164,7 @@
       },
       { divider: true, label: "", action: () => {} },
       {
-        label: "Delete",
+        label: t("Delete"),
         icon: Trash2,
         action: () => {
           if (type === "chapter") {
@@ -1309,11 +1320,11 @@
   <div class="p-4 border-b border-press-border">
     <div class="flex items-center justify-between">
       <BrandWordmark />
-      <Tooltip text="Collapse sidebar" position="bottom">
+      <Tooltip text={t("Collapse sidebar")} position="bottom">
         <button
           onclick={toggleSidebar}
           class="text-press-muted hover:text-press-text p-1"
-          aria-label="Collapse sidebar"
+          aria-label={t("Collapse sidebar")}
         >
           <ChevronsLeft class="w-5 h-5" />
         </button>
@@ -1329,7 +1340,10 @@
           {#if currentProject.value.project_type === "screenplay" && pageCountEstimate}
             <span
               class="shrink-0 text-press-eyebrow text-press-muted bg-press-sunken px-1.5 py-0.5 rounded"
-              title="{pageCountEstimate.words} words · target: {pageCountEstimate.target}"
+              title={t("{words} words · target: {target}", {
+                words: pageCountEstimate.words,
+                target: pageCountEstimate.target,
+              })}
             >
               {pageCountEstimate.pages.toFixed(1)} / {pageCountEstimate.target}
             </span>
@@ -1337,35 +1351,35 @@
         </div>
         <!-- Action icons (primary only; secondary behind more menu) -->
         <div class="flex items-center gap-0.5 shrink-0">
-          <Tooltip text="Project settings" position="bottom">
+          <Tooltip text={t("Project settings")} position="bottom">
             <button
               data-testid="settings-button"
               onclick={() => (showSettingsDialog = true)}
               class="p-1.5 text-press-muted hover:text-press-text hover:bg-press-sunken rounded transition-colors"
-              aria-label="Project settings"
+              aria-label={t("Project settings")}
             >
               <Settings class="w-4 h-4" />
             </button>
           </Tooltip>
           {#if currentProject.value.source_path && supportsSync(currentProject.value.source_type)}
-            <Tooltip text="Sync from source" position="bottom">
+            <Tooltip text={t("Sync from source")} position="bottom">
               <button
                 data-testid="sync-button"
                 onclick={handleSyncClick}
                 disabled={loadingSyncPreview}
                 class="p-1.5 text-press-muted hover:text-press-text hover:bg-press-sunken rounded transition-colors"
-                aria-label="Sync from source"
+                aria-label={t("Sync from source")}
               >
                 <RefreshCw class="w-4 h-4 {loadingSyncPreview ? 'animate-spin' : ''}" />
               </button>
             </Tooltip>
           {/if}
           <div class="relative" bind:this={moreMenuRef}>
-            <Tooltip text="More actions" position="bottom">
+            <Tooltip text={t("More actions")} position="bottom">
               <button
                 onclick={() => (showMoreMenu = !showMoreMenu)}
                 class="p-1.5 text-press-muted hover:text-press-text hover:bg-press-sunken rounded transition-colors"
-                aria-label="More actions"
+                aria-label={t("More actions")}
                 data-testid="more-actions-button"
               >
                 <MoreVertical class="w-4 h-4" />
@@ -1390,7 +1404,7 @@
                   class="w-full flex items-center gap-3 px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors"
                 >
                   <Download class="w-4 h-4 text-press-muted" />
-                  Export
+                  {t("Export")}
                 </button>
                 <button
                   data-testid="snapshots-button"
@@ -1401,7 +1415,7 @@
                   class="w-full flex items-center gap-3 px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors"
                 >
                   <Clock class="w-4 h-4 text-press-muted" />
-                  Snapshots
+                  {t("Snapshots")}
                 </button>
                 <button
                   data-testid="archive-button"
@@ -1412,7 +1426,7 @@
                   class="w-full flex items-center gap-3 px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors"
                 >
                   <Archive class="w-4 h-4 text-press-muted" />
-                  Archive
+                  {t("Archive")}
                 </button>
               </div>
             {/if}
@@ -1423,10 +1437,10 @@
       <button
         onclick={goHome}
         class="mt-3 w-full flex items-center gap-2 px-3 py-1.5 text-press-eyebrow text-press-muted hover:text-press-text rounded-md hover:bg-press-sunken transition-colors"
-        aria-label="Close project"
+        aria-label={t("Close project")}
       >
         <Home class="w-3.5 h-3.5" />
-        All Projects
+        {t("All Projects")}
       </button>
     {/if}
   </div>
@@ -1435,14 +1449,14 @@
   <div class="flex-1 overflow-y-auto p-2">
     {#if loading}
       <div class="flex items-center justify-center p-4">
-        <span class="text-press-muted">Loading...</span>
+        <span class="text-press-muted">{t("Loading...")}</span>
       </div>
     {:else if currentProject.chapters.length === 0}
       <div class="flex items-center justify-center p-4">
-        <span class="text-press-muted text-press-ui">No chapters found</span>
+        <span class="text-press-muted text-press-ui">{t("No chapters found")}</span>
       </div>
     {:else}
-      <nav class="space-y-1" aria-label="Project outline">
+      <nav class="space-y-1" aria-label={t("Project outline")}>
         {#each partGroups as group}
           <!-- Part header (if this group has a Part) -->
           {#if group.part}
@@ -1473,7 +1487,7 @@
                   class:opacity-100={hoveredChapterId === part.id}
                   role="button"
                   tabindex="-1"
-                  aria-label="Drag to reorder"
+                  aria-label={t("Drag to reorder")}
                 >
                   <GripVertical class="w-3.5 h-3.5" />
                 </div>
@@ -1509,7 +1523,7 @@
                   class="p-1 text-press-muted hover:text-press-text transition-opacity shrink-0"
                   class:opacity-0={hoveredChapterId !== part.id}
                   class:opacity-100={hoveredChapterId === part.id}
-                  aria-label="{partLabel} menu"
+                  aria-label={t("{type} menu", { type: t(partLabel) })}
                 >
                   <MoreVertical class="w-3.5 h-3.5" />
                 </button>
@@ -1550,7 +1564,7 @@
                         class:opacity-100={hoveredChapterId === chapter.id}
                         role="button"
                         tabindex="-1"
-                        aria-label="Drag to reorder"
+                        aria-label={t("Drag to reorder")}
                       >
                         <GripVertical class="w-3.5 h-3.5" />
                       </div>
@@ -1579,7 +1593,8 @@
                         >
                         {#if writing.value?.chapter_words?.[chapter.id] !== undefined}
                           <span class="text-press-eyebrow text-press-muted shrink-0"
-                            >{writing.value.chapter_words[chapter.id].toLocaleString()} words</span
+                            >{writing.value.chapter_words[chapter.id].toLocaleString(ui.locale)}
+                            {t("words")}</span
                           >
                         {/if}
                       </button>
@@ -1591,7 +1606,7 @@
                         class="p-1 text-press-muted hover:text-press-text transition-opacity shrink-0"
                         class:opacity-0={hoveredChapterId !== chapter.id}
                         class:opacity-100={hoveredChapterId === chapter.id}
-                        aria-label="{chapterLabel} menu"
+                        aria-label={t("{type} menu", { type: t(chapterLabel) })}
                       >
                         <MoreVertical class="w-3.5 h-3.5" />
                       </button>
@@ -1609,7 +1624,7 @@
                               bind:value={chapterSynopsisText}
                               oninput={() => handleChapterSynopsisInput(chapter.id)}
                               onblur={() => finishEditingChapterSynopsis(chapter.id)}
-                              placeholder="{chapterLabel} synopsis..."
+                              placeholder={t("{type} synopsis...", { type: t(chapterLabel) })}
                               class="w-full text-press-eyebrow text-press-text bg-press-sunken border border-press-accent rounded-md px-2.5 py-1.5 resize-none focus:outline-none focus:border-press-accent"
                               rows="2"
                               autofocus
@@ -1621,7 +1636,7 @@
                                 ? 'text-press-muted'
                                 : 'text-press-muted italic'}"
                             >
-                              {chapter.synopsis || "Add synopsis..."}
+                              {chapter.synopsis || t("Add synopsis...")}
                             </button>
                           {/if}
                         </div>
@@ -1635,15 +1650,16 @@
                           >
                             <CircleDashed class="w-5 h-5 text-press-muted mx-auto mb-1.5" />
                             <p class="text-press-eyebrow text-press-muted">
-                              This chapter is undefined. Add a synopsis and scenes will appear when
-                              you promote it to Flexible or Fixed.
+                              {t(
+                                "This chapter is undefined. Add a synopsis and scenes will appear when you promote it to Flexible or Fixed."
+                              )}
                             </p>
                             {#if !chapter.locked}
                               <button
                                 onclick={() => setPlanningStatus("chapter", chapter, "flexible")}
                                 class="mt-2 px-2.5 py-1 rounded-md bg-press-accent-wash text-press-accent-text text-press-eyebrow font-medium hover:text-press-text transition-colors"
                               >
-                                Switch to Flexible
+                                {t("Switch to Flexible")}
                               </button>
                             {/if}
                           </div>
@@ -1680,7 +1696,8 @@
                               <span class="truncate">{scene.title}</span>
                               {#if writing.value?.scene_words?.[scene.id] !== undefined}
                                 <span class="text-press-eyebrow text-press-muted"
-                                  >{writing.value.scene_words[scene.id].toLocaleString()} words</span
+                                  >{writing.value.scene_words[scene.id].toLocaleString(ui.locale)}
+                                  {t("words")}</span
                                 >
                               {/if}
                             </button>
@@ -1695,7 +1712,7 @@
                                 bind:value={newTitle}
                                 onkeydown={handleCreateKeydown}
                                 onblur={cancelCreate}
-                                placeholder="Scene title..."
+                                placeholder={t("Scene title...")}
                                 class="w-full px-2 py-1 text-press-ui bg-press-sunken border border-press-accent rounded focus:outline-none text-press-text"
                                 autofocus
                               />
@@ -1707,13 +1724,13 @@
                               class="w-full flex items-center gap-2 px-2 py-1 rounded text-press-eyebrow text-press-muted hover:text-press-text hover:bg-press-sunken transition-colors"
                             >
                               <Plus class="w-3 h-3" />
-                              New Scene
+                              {t("New Scene")}
                             </button>
                           {/if}
 
                           {#if currentProject.scenes.length === 0 && !creatingScene}
                             <span class="text-press-muted text-press-eyebrow px-2 py-1 italic"
-                              >No scenes yet</span
+                              >{t("No scenes yet")}</span
                             >
                           {/if}
 
@@ -1723,7 +1740,7 @@
                                 onclick={() => setPlanningStatus("chapter", chapter, "fixed")}
                                 class="text-press-eyebrow text-press-accent-text hover:underline"
                               >
-                                Define full structure
+                                {t("Define full structure")}
                               </button>
                             </div>
                           {/if}
@@ -1744,9 +1761,9 @@
                                   : "text-press-muted hover:text-press-text"
                               }`}
                               onclick={() => (outlineViewFilter = "all")}
-                              title="Show all scenes"
+                              title={t("Show all scenes")}
                             >
-                              All
+                              {t("All")}
                             </button>
                             <button
                               type="button"
@@ -1756,9 +1773,9 @@
                                   : "text-press-muted hover:text-press-text"
                               }`}
                               onclick={() => (outlineViewFilter = "planned_only")}
-                              title="Show only planned scenes"
+                              title={t("Show only planned scenes")}
                             >
-                              Planned
+                              {t("Planned")}
                             </button>
                             <button
                               type="button"
@@ -1768,9 +1785,9 @@
                                   : "text-press-muted hover:text-press-text"
                               }`}
                               onclick={() => (outlineViewFilter = "next_5")}
-                              title="Show next 5 scenes"
+                              title={t("Show next 5 scenes")}
                             >
-                              Next 5
+                              {t("Next 5")}
                             </button>
                           </div>
 
@@ -1784,7 +1801,7 @@
                                   ? "text-press-accent-text bg-press-accent-wash"
                                   : "text-press-muted hover:text-press-text hover:bg-press-sunken"
                               }`}
-                              title="Filter by type & status"
+                              title={t("Filter by type & status")}
                             >
                               <Filter class="w-3.5 h-3.5" />
                             </button>
@@ -1795,7 +1812,7 @@
                                 <div class="flex items-center justify-between">
                                   <span
                                     class="text-press-eyebrow font-semibold text-press-text uppercase tracking-wide"
-                                    >Filters</span
+                                    >{t("Filters")}</span
                                   >
                                   {#if hasActiveFilters}
                                     <button
@@ -1807,14 +1824,15 @@
                                       }}
                                       class="text-press-eyebrow text-press-accent-text hover:underline"
                                     >
-                                      Reset
+                                      {t("Reset")}
                                     </button>
                                   {/if}
                                 </div>
 
                                 <!-- Type filter -->
                                 <div class="space-y-1.5">
-                                  <span class="text-press-eyebrow text-press-muted">Scene type</span
+                                  <span class="text-press-eyebrow text-press-muted"
+                                    >{t("Scene type")}</span
                                   >
                                   <div class="flex flex-wrap gap-1.5">
                                     {#each sceneTypeFilterOptions as option}
@@ -1830,7 +1848,7 @@
                                         aria-pressed={isSceneTypeVisible(option.type)}
                                       >
                                         <TypeIcon class="w-3 h-3" />
-                                        {option.label}
+                                        {t(option.label)}
                                       </button>
                                     {/each}
                                   </div>
@@ -1838,15 +1856,17 @@
 
                                 <!-- Status filter -->
                                 <div class="space-y-1.5">
-                                  <span class="text-press-eyebrow text-press-muted">Status</span>
+                                  <span class="text-press-eyebrow text-press-muted"
+                                    >{t("Status")}</span
+                                  >
                                   <div class="relative">
                                     <select
                                       bind:value={sceneStatusFilter}
                                       class="w-full appearance-none bg-press-sunken text-press-text text-press-eyebrow border border-press-border rounded-md px-2.5 py-1.5 focus:outline-none focus:border-press-accent cursor-pointer"
-                                      aria-label="Scene status filter"
+                                      aria-label={t("Scene status filter")}
                                     >
                                       {#each sceneStatusOptions as option}
-                                        <option value={option.value}>{option.label}</option>
+                                        <option value={option.value}>{t(option.label)}</option>
                                       {/each}
                                     </select>
                                     <ChevronDown
@@ -1859,7 +1879,7 @@
                                 {#if savedFilters.length > 0}
                                   <div class="border-t border-press-border pt-2 space-y-1">
                                     <span class="text-press-eyebrow text-press-muted"
-                                      >Saved filters</span
+                                      >{t("Saved filters")}</span
                                     >
                                     {#each savedFilters as filter}
                                       <div class="flex items-center gap-1">
@@ -1872,7 +1892,9 @@
                                         <button
                                           onclick={() => deleteSavedFilter(filter.id)}
                                           class="p-0.5 text-press-muted hover:text-press-error shrink-0"
-                                          aria-label="Delete saved filter {filter.name}"
+                                          aria-label={t("Delete saved filter {name}", {
+                                            name: filter.name,
+                                          })}
                                         >
                                           <Trash2 class="w-3 h-3" />
                                         </button>
@@ -1889,7 +1911,7 @@
                                         <input
                                           type="text"
                                           bind:value={savedFilterName}
-                                          placeholder="Filter name..."
+                                          placeholder={t("Filter name...")}
                                           class="flex-1 bg-press-sunken text-press-text text-press-eyebrow rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-press-focus"
                                           onkeydown={(e) =>
                                             e.key === "Enter" && saveCurrentFilter()}
@@ -1899,7 +1921,7 @@
                                           disabled={!savedFilterName.trim()}
                                           class="text-press-eyebrow text-press-accent-text hover:underline disabled:no-underline px-1"
                                         >
-                                          Save
+                                          {t("Save")}
                                         </button>
                                       </div>
                                     {:else}
@@ -1907,7 +1929,7 @@
                                         onclick={() => (showSaveFilterInput = true)}
                                         class="text-press-eyebrow text-press-accent-text hover:underline"
                                       >
-                                        Save current filter...
+                                        {t("Save current filter...")}
                                       </button>
                                     {/if}
                                   </div>
@@ -1946,7 +1968,7 @@
                                 class:opacity-100={hoveredSceneId === scene.id}
                                 role="button"
                                 tabindex="-1"
-                                aria-label="Drag to reorder"
+                                aria-label={t("Drag to reorder")}
                               >
                                 <GripVertical class="w-3 h-3" />
                               </div>
@@ -1987,7 +2009,8 @@
                                 >
                                 {#if writing.value?.scene_words?.[scene.id] !== undefined}
                                   <span class="text-press-eyebrow shrink-0"
-                                    >{writing.value.scene_words[scene.id].toLocaleString()} words</span
+                                    >{writing.value.scene_words[scene.id].toLocaleString(ui.locale)}
+                                    {t("words")}</span
                                   >
                                 {/if}
                                 <!-- Trailing badges: scene type + status dot -->
@@ -1999,13 +2022,13 @@
                                     {#if SceneTypeIcon}
                                       <SceneTypeIcon
                                         class={`w-3 h-3 ${isSelected ? "text-press-on-accent" : "text-press-muted"}`}
-                                        title={sceneTypeLabels[sceneType as SceneType]}
+                                        title={t(sceneTypeLabels[sceneType as SceneType])}
                                       />
                                     {/if}
                                   {/if}
                                   <span
                                     class={`w-1.5 h-1.5 rounded-full ${sceneStatusClasses[sceneStatus]} ${sceneStatus === "draft" ? "opacity-40" : ""}`}
-                                    title={sceneStatusLabels[sceneStatus]}
+                                    title={t(sceneStatusLabels[sceneStatus])}
                                   ></span>
                                 </span>
                               </button>
@@ -2019,7 +2042,7 @@
                                 class:text-press-muted={!isSelected}
                                 class:opacity-0={hoveredSceneId !== scene.id}
                                 class:opacity-100={hoveredSceneId === scene.id}
-                                aria-label="Scene menu"
+                                aria-label={t("Scene menu")}
                               >
                                 <MoreVertical class="w-3 h-3" />
                               </button>
@@ -2036,7 +2059,7 @@
                                 bind:value={newTitle}
                                 onkeydown={handleCreateKeydown}
                                 onblur={cancelCreate}
-                                placeholder="Scene title..."
+                                placeholder={t("Scene title...")}
                                 class="w-full px-2 py-1 text-press-ui bg-press-sunken border border-press-accent rounded focus:outline-none text-press-text"
                                 autofocus
                               />
@@ -2048,17 +2071,17 @@
                               class="w-full flex items-center gap-2 px-2 py-1 rounded text-press-eyebrow text-press-muted hover:text-press-text hover:bg-press-sunken transition-colors"
                             >
                               <Plus class="w-3 h-3" />
-                              New Scene
+                              {t("New Scene")}
                             </button>
                           {/if}
 
                           {#if currentProject.scenes.length === 0 && !creatingScene}
                             <span class="text-press-muted text-press-eyebrow px-2 py-1 italic"
-                              >No scenes yet</span
+                              >{t("No scenes yet")}</span
                             >
                           {:else if filteredScenes.length === 0 && !creatingScene}
                             <span class="text-press-muted text-press-eyebrow px-2 py-1 italic"
-                              >No scenes match filters</span
+                              >{t("No scenes match filters")}</span
                             >
                           {/if}
                         </div>
@@ -2081,7 +2104,9 @@
               bind:value={newTitle}
               onkeydown={handleCreateKeydown}
               onblur={cancelCreate}
-              placeholder={creatingPart ? `${partLabel} title...` : `${chapterLabel} title...`}
+              placeholder={t("{type} title...", {
+                type: t(creatingPart ? partLabel : chapterLabel),
+              })}
               class="w-full px-2 py-1 text-press-ui bg-press-sunken border border-press-accent rounded focus:outline-none text-press-text"
               autofocus
             />
@@ -2099,14 +2124,14 @@
                 class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors rounded-l-lg"
               >
                 <Plus class="w-4 h-4" />
-                New {chapterLabel}
+                {t("New {type}", { type: t(chapterLabel) })}
               </button>
               <!-- Dropdown trigger -->
               <button
                 data-testid="new-dropdown-button"
                 onclick={() => (showNewDropdown = !showNewDropdown)}
                 class="px-2 py-2 text-press-muted hover:text-press-text transition-colors border-l border-press-border hover:bg-press-surface rounded-r-lg"
-                aria-label="More options"
+                aria-label={t("More options")}
               >
                 <ChevronDown class="w-4 h-4" />
               </button>
@@ -2123,7 +2148,7 @@
                   class="w-full flex items-center gap-2 px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors"
                 >
                   <Folder class="w-4 h-4" />
-                  New {chapterLabel}
+                  {t("New {type}", { type: t(chapterLabel) })}
                 </button>
                 <button
                   data-testid="dropdown-new-part"
@@ -2131,7 +2156,7 @@
                   class="w-full flex items-center gap-2 px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors"
                 >
                   <BookOpen class="w-4 h-4" />
-                  New {partLabel}
+                  {t("New {type}", { type: t(partLabel) })}
                 </button>
               </div>
             {/if}
@@ -2144,11 +2169,11 @@
 
 <!-- Collapsed sidebar toggle -->
 {#if ui.sidebarCollapsed}
-  <Tooltip text="Expand sidebar" position="right">
+  <Tooltip text={t("Expand sidebar")} position="right">
     <button
       onclick={toggleSidebar}
       class="fixed left-0 top-1/2 -translate-y-1/2 bg-press-surface p-2 rounded-r-lg text-press-muted hover:text-press-text z-press-raised"
-      aria-label="Expand sidebar"
+      aria-label={t("Expand sidebar")}
     >
       <ChevronsRight class="w-5 h-5" />
     </button>
@@ -2168,7 +2193,9 @@
 <!-- Delete Confirmation Dialog -->
 {#if deleteDialog}
   <ConfirmDialog
-    title="Delete {deleteDialog.type === 'chapter' ? 'Chapter' : 'Scene'}"
+    title={t("Delete {type}", {
+      type: t(deleteDialog.type === "chapter" ? chapterLabel : "Scene"),
+    })}
     message={deleteDialog.message}
     onConfirm={executeDelete}
     onCancel={() => (deleteDialog = null)}
@@ -2206,7 +2233,9 @@
 <!-- Rename Dialog -->
 {#if renameDialog}
   <RenameDialog
-    title="Rename {renameDialog.type === 'chapter' ? chapterLabel : 'Scene'}"
+    title={t("Rename {type}", {
+      type: t(renameDialog.type === "chapter" ? chapterLabel : "Scene"),
+    })}
     currentName={renameDialog.title}
     onSave={(newName) => handleRename(renameDialog!.type, renameDialog!.id, newName)}
     onClose={() => (renameDialog = null)}

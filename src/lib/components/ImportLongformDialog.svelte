@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from "../i18n.svelte";
+
   interface Props {
     onSelectIndex: () => void;
     onSelectVault: () => void;
@@ -30,29 +32,30 @@
       id="longform-import-title"
       class="text-press-body-lg font-heading font-medium text-press-text mb-3"
     >
-      Import Longform Project
+      {t("Import Longform Project")}
     </h3>
     <p class="font-prose text-press-text text-press-body mb-6 max-w-press-measure">
-      Choose how to import your Longform project. Use the index file if you already have a Longform
-      project note, or select a vault folder to auto-detect the project.
+      {t(
+        "Choose how to import your Longform project. Use the index file if you already have a Longform project note, or select a vault folder to auto-detect the project."
+      )}
     </p>
     <div class="space-y-3">
       <button
         onclick={onSelectIndex}
         class="w-full px-4 py-2.5 bg-press-sunken rounded-lg hover:bg-press-sunken transition-colors text-press-text text-left"
       >
-        <div class="text-press-ui font-medium">Choose Longform Index File</div>
+        <div class="text-press-ui font-medium">{t("Choose Longform Index File")}</div>
         <div class="text-press-eyebrow text-press-muted">
-          Select the .md index note with longform frontmatter
+          {t("Select the .md index note with longform frontmatter")}
         </div>
       </button>
       <button
         onclick={onSelectVault}
         class="w-full px-4 py-2.5 bg-press-sunken rounded-lg hover:bg-press-sunken transition-colors text-press-text text-left"
       >
-        <div class="text-press-ui font-medium">Choose Obsidian Vault Folder</div>
+        <div class="text-press-ui font-medium">{t("Choose Obsidian Vault Folder")}</div>
         <div class="text-press-eyebrow text-press-muted">
-          Scan the vault to find Longform projects
+          {t("Scan the vault to find Longform projects")}
         </div>
       </button>
     </div>
@@ -61,7 +64,7 @@
         onclick={onClose}
         class="px-4 py-2 bg-press-sunken rounded hover:bg-press-sunken transition-colors text-press-text"
       >
-        Cancel
+        {t("Cancel")}
       </button>
     </div>
   </div>

@@ -17,6 +17,8 @@
     type SceneReview,
   } from "../utils/revisions";
   import type { ReviewItem } from "../utils/reviewItems";
+  import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
   import {
     Search,
     ChevronLeft,
@@ -90,7 +92,7 @@
   let exportSources = $state<EditorialSource[]>([]),
     rounds = $state<EditorialRound[]>([]);
   let projectId = $state(""),
-    roundName = $state("Editorial pass"),
+    roundName = $state(t("Editorial pass")),
     brief = $state("");
   let exportScope = $state("all");
   let menuPosition = $state<{ x: number; y: number } | null>(null);
@@ -103,14 +105,14 @@
     ...(local
       ? [
           {
-            label: "Draft history",
+            label: t("Draft history"),
             icon: History,
             action: async () => {
               if (!session || (await reviewDecisions())) showHistory = true;
             },
           },
           {
-            label: "Start suggestions from current prose",
+            label: t("Start suggestions from current prose"),
             icon: RotateCcw,
             action: async () => {
               await suggest(true);
@@ -118,7 +120,7 @@
           },
           { label: "", divider: true, action: () => {} },
           {
-            label: "Review packages and rounds…",
+            label: t("Review packages and rounds…"),
             icon: FileOutput,
             action: () => openProject(projectId),
           },
@@ -127,15 +129,15 @@
     ...(session
       ? [
           {
-            label: "Export feedback",
+            label: t("Export feedback"),
             icon: FileOutput,
             disabled: !session.name.trim() || busy,
             action: () => returnFeedback(),
           },
-          { label: "Export recovery copy", icon: Download, action: () => returnFeedback(true) },
+          { label: t("Export recovery copy"), icon: Download, action: () => returnFeedback(true) },
         ]
       : []),
-    { label: "Open review or feedback file…", icon: FolderOpen, action: () => openFile() },
+    { label: t("Open review or feedback file…"), icon: FolderOpen, action: () => openFile() },
   ]);
   function dismissManuscriptMenu(event: MouseEvent) {
     if (!menuPosition || !(event.target instanceof Element)) return;
@@ -240,7 +242,7 @@
       kind: a.change.kind,
       state: a.annotation.state,
       author: a.annotation.messages[0]?.author || "Writer",
-      excerpt: a.annotation.quote || a.annotation.replacement || "General feedback",
+      excerpt: a.annotation.quote || a.annotation.replacement || t("General feedback"),
       messages: a.change.messages,
       before: a.annotation.quote
         ? sliceHtml(
@@ -299,7 +301,7 @@
       kind: a.replacement === null ? ("comment" as const) : ("suggestion" as const),
       state: a.state,
       author: a.messages[0]?.author || "Writer",
-      excerpt: a.quote || a.replacement || "General feedback",
+      excerpt: a.quote || a.replacement || t("General feedback"),
       messages: a.messages.map((m, i) => ({ ...m, id: `${a.id}:${i}` })),
       before: a.quote
         ? sliceHtml(new Slice(Fragment.from(editorialSchema.text(a.quote)), 0, 0).toJSON())
@@ -307,7 +309,14 @@
       after: a.replacement
         ? sliceHtml(new Slice(Fragment.from(editorialSchema.text(a.replacement)), 0, 0).toJSON())
         : "",
-      unavailable: `Saved on inactive ${review.mode === "page" ? "beat" : "page"} prose in “${sources.find((s) => s.scene_id === review.scene_id)?.scene || "this scene"}”. Return to Writing and switch that scene to ${review.mode === "page" ? "Beat" : "Page"} mode to act on this feedback.`,
+      unavailable: t(
+        "Saved on inactive {proseMode} prose in “{scene}”. Return to Writing and switch that scene to {editorMode} mode to act on this feedback.",
+        {
+          proseMode: t(review.mode === "page" ? "beat" : "page"),
+          scene: sources.find((s) => s.scene_id === review.scene_id)?.scene || t("this scene"),
+          editorMode: t(review.mode === "page" ? "Beat" : "Page"),
+        }
+      ),
     })),
   ]);
   function stepAnnotation(direction: number) {
@@ -498,14 +507,14 @@
     const old = legacy.find((a) => a.key === id);
     if (!old) return;
     await action(async () => {
-      if (old.locked) throw new Error("Unlock this scene before changing its review.");
+      if (old.locked) throw new Error(t("Unlock this scene before changing its review."));
       const expected = $state.snapshot(old.review);
       let data = window.structuredClone(expected.data);
       let next = null;
       if (reanchor) {
         const range = localSelection(sources, selection.from, selection.to);
         if (range.source.scene_id !== old.review.scene_id)
-          throw new Error("Select a passage in the original scene.");
+          throw new Error(t("Select a passage in the original scene."));
         Object.assign(data.annotations.find((a) => a.id === old.annotation.id)!, {
           document_id: range.source.id,
           anchor_html: range.source.html,
@@ -544,7 +553,7 @@
     return action(async () => {
       const old = legacy.find((a) => a.key === id);
       if (old) {
-        if (old.locked) throw new Error("Unlock this scene before changing its review.");
+        if (old.locked) throw new Error(t("Unlock this scene before changing its review."));
         const expected = $state.snapshot(old.review);
         const data = window.structuredClone(expected.data);
         data.annotations
@@ -554,7 +563,7 @@
         await loadLocalScenes();
       } else if (session) {
         const change = session.changes.find((c) => c.id === id);
-        if (!change) throw new Error("This conversation is no longer available.");
+        if (!change) throw new Error(t("This conversation is no longer available."));
         change.messages.push(message(session.name, text));
         stage();
       } else if (feedback) {
@@ -593,7 +602,7 @@
           (filter === "all" || filter === "open")
       );
       if (targets.some((a) => a.locked))
-        throw new Error("Unlock the selected scenes before deciding on their suggestions.");
+        throw new Error(t("Unlock the selected scenes before deciding on their suggestions."));
       const updates = [...new Set(targets.map((a) => a.review.scene_id))].map((id) => {
         const expected = $state.snapshot(sceneReviews.find((r) => r.scene_id === id)!);
         const ids = targets.filter((a) => a.review.scene_id === id).map((a) => a.annotation.id);
@@ -692,7 +701,9 @@
       saves.stage($state.snapshot(session));
       savedState = "Saving…";
     } catch (e) {
-      error = `Recovery journal: ${String(e)}. Keep this window open until saving succeeds.`;
+      error = t("Recovery journal: {error}. Keep this window open until saving succeeds.", {
+        error: String(e),
+      });
     }
     clearTimeout(timer);
     timer = setTimeout(() => {
@@ -749,11 +760,11 @@
       const selected =
         path ??
         (await open({
-          title: "Open a Kindling review or feedback file",
+          title: t("Open a Kindling review or feedback file"),
           multiple: false,
           filters: [
             {
-              name: "Kindling editorial files",
+              name: t("Kindling editorial files"),
               extensions: ["kindling-review", "kindling-feedback"],
             },
           ],
@@ -855,9 +866,9 @@
     if (exportScope === "selected" && !selectedChapters.length) return;
     await action(async () => {
       const path = await save({
-        title: "Export for editorial review",
+        title: t("Export for editorial review"),
         defaultPath: `${roundName}.kindling-review`,
-        filters: [{ name: "Kindling review", extensions: ["kindling-review"] }],
+        filters: [{ name: t("Kindling review"), extensions: ["kindling-review"] }],
       });
       if (!path) return;
       const created = await invoke<EditorialRound>("export_editorial_review", {
@@ -868,7 +879,7 @@
         path,
       });
       rounds = [created, ...rounds];
-      notice = `Review package saved to ${path}. Give this file to your editor.`;
+      notice = t("Review package saved to {path}. Give this file to your editor.", { path });
     });
   }
 
@@ -933,7 +944,7 @@
         if (lockSources.some((s) => s.id === node.attrs.source && s.locked)) locked = true;
       });
       if (locked) {
-        error = "Unlock this scene before adding feedback.";
+        error = t("Unlock this scene before adding feedback.");
         return;
       }
     }
@@ -1005,11 +1016,11 @@
       if (!round || !session) return;
       if (!recovery) await flush();
       const path = await save({
-        title: recovery ? "Export recovery copy" : "Return editorial feedback",
+        title: t(recovery ? "Export recovery copy" : "Return editorial feedback"),
         defaultPath: `${round.title} — ${round.name} — ${session.name || "review"}${recovery ? " — recovery.kindling-review" : ".kindling-feedback"}`,
         filters: [
           {
-            name: recovery ? "Kindling recovery review" : "Kindling feedback",
+            name: t(recovery ? "Kindling recovery review" : "Kindling feedback"),
             extensions: [recovery ? "kindling-review" : "kindling-feedback"],
           },
         ],
@@ -1024,10 +1035,16 @@
         path,
       });
       if (recovery) {
-        notice = `Recovery review saved to ${path}. Open it in Kindling to resume your work, then export feedback normally.`;
+        notice = t(
+          "Recovery review saved to {path}. Open it in Kindling to resume your work, then export feedback normally.",
+          { path }
+        );
         return;
       }
-      notice = `Feedback saved to ${path}. Return this file to the writer. You can continue reviewing and export another response later.`;
+      notice = t(
+        "Feedback saved to {path}. Return this file to the writer. You can continue reviewing and export another response later.",
+        { path }
+      );
     });
   }
   async function sendWriterReply() {
@@ -1037,13 +1054,16 @@
       const reviewer = reviewers.find((r) => r.id === reviewerId);
       if (!reviewer) return;
       const path = await save({
-        title: "Send replies and decisions to your editor",
+        title: t("Send replies and decisions to your editor"),
         defaultPath: `${round!.title} — ${round!.name} — reply to ${reviewer.name}.kindling-review`,
-        filters: [{ name: "Kindling review response", extensions: ["kindling-review"] }],
+        filters: [{ name: t("Kindling review response"), extensions: ["kindling-review"] }],
       });
       if (!path) return;
       await invoke("export_editorial_reply", { roundId: feedback.round.id, reviewerId, path });
-      notice = `Response saved to ${path}. Your editor opens it to receive your replies and decisions while keeping their ongoing review.`;
+      notice = t(
+        "Response saved to {path}. Your editor opens it to receive your replies and decisions while keeping their ongoing review.",
+        { path }
+      );
     });
   }
   async function importFeedback() {
@@ -1054,7 +1074,9 @@
       screen = "feedback";
       manuscriptVersion++;
       selectedId = null;
-      notice = "Feedback imported. Your manuscript has not changed. Review the suggestions below.";
+      notice = t(
+        "Feedback imported. Your manuscript has not changed. Review the suggestions below."
+      );
       await tick();
       focusSceneAt(1);
     });
@@ -1122,8 +1144,8 @@
       await onManuscriptChanged();
       notice =
         decision === "accepted"
-          ? "Changes accepted. Previous prose is preserved in scene draft history."
-          : "Review decision saved.";
+          ? t("Changes accepted. Previous prose is preserved in scene draft history.")
+          : t("Review decision saved.");
     });
   }
   function closeSearch() {
@@ -1193,7 +1215,7 @@
   class="editorial-workspace"
   class:active
   hidden={!active}
-  aria-label="Editorial workspace"
+  aria-label={t("Editorial workspace")}
   tabindex="-1"
   onkeydown={(e) => {
     if (e.key === "Escape" && menuPosition) {
@@ -1213,11 +1235,13 @@
       <button
         class="icon"
         aria-label={packageReturn
-          ? "Return to revisions"
+          ? t("Return to revisions")
           : local
-            ? "Return to writing"
-            : "Close review"}
-        title={packageReturn ? "Return to revisions" : local ? "Return to writing" : "Close review"}
+            ? t("Return to writing")
+            : t("Close review")}
+        title={t(
+          packageReturn ? "Return to revisions" : local ? "Return to writing" : "Close review"
+        )}
         disabled={busy}
         onclick={back}><ChevronLeft size={18} /></button
       >
@@ -1227,28 +1251,28 @@
         {/if}
         <h1>
           {screen === "export"
-            ? "Review packages"
-            : focusedSource?.scene || round?.title || "Editorial review"}
+            ? t("Review packages")
+            : focusedSource?.scene || round?.title || t("Editorial review")}
         </h1>
       </div>
     </div>
     <div class="workspace-actions">
       {#if local && focusedReview && screen !== "export"}<span class="compact-select"
           ><select
-            aria-label="Revision status"
+            aria-label={t("Revision status")}
             disabled={busy || focusedSource?.locked}
             value={focusedReview.data.status}
             onchange={(e) => setLocalStatus(e.currentTarget.value)}
             >{#each Object.entries(revisionStatuses) as [value, label]}<option {value}
-                >{label}</option
+                >{t(label)}</option
               >{/each}</select
           ><ChevronDown size={14} /></span
         >{/if}
-      {#if session}<span class="save-state" role="status">{savedState}</span>{/if}
+      {#if session}<span class="save-state" role="status">{t(savedState)}</span>{/if}
       {#if screen === "review" || screen === "feedback"}
         {#if local}<span class="compact-select"
             ><select
-              aria-label="Editor mode"
+              aria-label={t("Editor mode")}
               value={screen}
               disabled={busy}
               onchange={(e) => {
@@ -1256,20 +1280,21 @@
                 else if (e.currentTarget.value === "writing") void close();
                 else void reviewDecisions();
               }}
-              ><option value="writing">Writing</option><option value="feedback">Reviewing</option
-              ><option value="review">Suggesting</option></select
+              ><option value="writing">{t("Writing")}</option><option value="feedback"
+                >{t("Reviewing")}</option
+              ><option value="review">{t("Suggesting")}</option></select
             ><ChevronDown size={14} /></span
-          >{:else}<span class="mode">{session ? "Suggesting" : "Reviewing feedback"}</span>{/if}
+          >{:else}<span class="mode">{t(session ? "Suggesting" : "Reviewing feedback")}</span>{/if}
         <button
           class="icon"
-          title="Find in manuscript"
-          aria-label="Find in manuscript"
+          title={t("Find in manuscript")}
+          aria-label={t("Find in manuscript")}
           onclick={focusSearch}><Search size={18} /></button
         >
         <button
           bind:this={menuTrigger}
           class="icon"
-          aria-label="Manuscript actions"
+          aria-label={t("Manuscript actions")}
           aria-haspopup="menu"
           aria-expanded={!!menuPosition}
           onclick={(event) => {
@@ -1293,41 +1318,42 @@
   </header>
   {#if error}<div role="alert" class="workspace-error">
       <p>{error}</p>
-      {#if session}<button onclick={() => flush().catch(() => {})}>Retry saving</button><button
-          onclick={() => returnFeedback(true)}>Export recovery copy</button
-        >{/if}
+      {#if session}<button onclick={() => flush().catch(() => {})}>{t("Retry saving")}</button
+        ><button onclick={() => returnFeedback(true)}>{t("Export recovery copy")}</button>{/if}
     </div>{/if}
   {#if notice}<p role="status" class="workspace-notice">{notice}</p>{/if}
   {#if screen === "export"}
     <div class="package-layout">
       <section class="package-form" aria-labelledby="package-title">
-        <h2 id="package-title">Send a manuscript for review</h2>
+        <h2 id="package-title">{t("Send a manuscript for review")}</h2>
         <p class="package-description">
-          Create a file your editor can open in Kindling. They can read, suggest edits, and return
-          their feedback without an account.
+          {t(
+            "Create a file your editor can open in Kindling. They can read, suggest edits, and return their feedback without an account."
+          )}
         </p>
         <label
-          >Review round<input
+          >{t("Review round")}<input
             bind:value={roundName}
-            placeholder="Developmental edit — September"
+            placeholder={t("Developmental edit — September")}
           /></label
         >
         <label
-          ><span>Brief for your editor <span class="optional">Optional</span></span><textarea
+          ><span>{t("Brief for your editor")} <span class="optional">{t("Optional")}</span></span
+          ><textarea
             bind:value={brief}
-            placeholder="What would you like your editor to focus on?"
+            placeholder={t("What would you like your editor to focus on?")}
             rows="4"
           ></textarea></label
         >
         <fieldset class="package-scope">
-          <legend>Manuscript to include</legend>
+          <legend>{t("Manuscript to include")}</legend>
           <label class="scope-choice"
             ><input
               type="radio"
               name="editorial-package-scope"
               bind:group={exportScope}
               value="all"
-            />Entire manuscript</label
+            />{t("Entire manuscript")}</label
           >
           <label class="scope-choice"
             ><input
@@ -1335,7 +1361,7 @@
               name="editorial-package-scope"
               bind:group={exportScope}
               value="selected"
-            />Selected chapters</label
+            />{t("Selected chapters")}</label
           >
           {#if exportScope === "selected"}
             <div class="chapter-choices">
@@ -1351,7 +1377,7 @@
                 >
               {/each}
               {#if !selectedChapters.length}<p class="scope-hint">
-                  Choose at least one chapter.
+                  {t("Choose at least one chapter.")}
                 </p>{/if}
             </div>
           {/if}
@@ -1363,20 +1389,20 @@
               !roundName.trim() ||
               !exportSources.length ||
               (exportScope === "selected" && !selectedChapters.length)}
-            onclick={exportReview}><FileOutput size={16} />Export review package</button
+            onclick={exportReview}><FileOutput size={16} />{t("Export review package")}</button
           >
-          <p class="scope-hint">Save the file, then share it with your editor.</p>
+          <p class="scope-hint">{t("Save the file, then share it with your editor.")}</p>
         </div>
       </section>
-      <aside class="package-rounds" aria-label="Review rounds">
-        <h2>Continue a review</h2>
+      <aside class="package-rounds" aria-label={t("Review rounds")}>
+        <h2>{t("Continue a review")}</h2>
         <button class="open-package" disabled={busy} onclick={() => openFile()}
-          ><FolderOpen size={16} />Open review or feedback file…</button
+          ><FolderOpen size={16} />{t("Open review or feedback file…")}</button
         >
         <p class="scope-hint">
-          Open returned feedback to review suggestions and send your decisions back.
+          {t("Open returned feedback to review suggestions and send your decisions back.")}
         </p>
-        <h3>Review rounds</h3>
+        <h3>{t("Review rounds")}</h3>
         {#if rounds.length}
           <ul>
             {#each rounds as item}<li>
@@ -1386,7 +1412,7 @@
                   disabled={busy}
                   onclick={() => openRound(item.id)}
                   ><span>{item.name}</span><time datetime={item.created_at}
-                    >{new Date(item.created_at).toLocaleString(undefined, {
+                    >{new Date(item.created_at).toLocaleString(ui.locale, {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
@@ -1399,7 +1425,7 @@
               </li>{/each}
           </ul>
         {:else}<p class="scope-hint">
-            Your review rounds will appear here after you export a package.
+            {t("Your review rounds will appear here after you export a package.")}
           </p>{/if}
       </aside>
     </div>
@@ -1411,60 +1437,74 @@
     {@const commentCount = received.session!.changes.filter((c) => c.kind === "comment").length}
     <div class="package-layout feedback-preview">
       <section class="feedback-summary" aria-labelledby="feedback-heading">
-        <h2 id="feedback-heading">Feedback from {received.session!.name}</h2>
+        <h2 id="feedback-heading">
+          {t("Feedback from {name}", { name: received.session!.name })}
+        </h2>
         <p class="package-description">
-          Bring your editor’s feedback into the original review round, then read it alongside your
-          manuscript.
+          {t(
+            "Bring your editor’s feedback into the original review round, then read it alongside your manuscript."
+          )}
         </p>
-        <ul class="feedback-counts" aria-label="Feedback in this file">
+        <ul class="feedback-counts" aria-label={t("Feedback in this file")}>
           <li>
-            <strong>{sceneCount}</strong>{sceneCount === 1 ? "scene included" : "scenes included"}
+            <strong>{sceneCount}</strong>{t(
+              sceneCount === 1 ? "scene included" : "scenes included"
+            )}
           </li>
           <li>
-            <strong>{suggestionCount}</strong>{suggestionCount === 1 ? "suggestion" : "suggestions"}
+            <strong>{suggestionCount}</strong>{t(
+              suggestionCount === 1 ? "suggestion" : "suggestions"
+            )}
           </li>
-          <li><strong>{commentCount}</strong>{commentCount === 1 ? "comment" : "comments"}</li>
+          <li><strong>{commentCount}</strong>{t(commentCount === 1 ? "comment" : "comments")}</li>
         </ul>
         <div class="feedback-next">
-          <h3>What happens next</h3>
+          <h3>{t("What happens next")}</h3>
           <p>
-            Read comments, reply to your editor, and accept or reject suggestions. If you’ve
-            rewritten a passage, Kindling helps you place its feedback before applying an edit.
+            {t(
+              "Read comments, reply to your editor, and accept or reject suggestions. If you’ve rewritten a passage, Kindling helps you place its feedback before applying an edit."
+            )}
           </p>
           <p>
-            You can work through the feedback at your own pace and export your replies and decisions
-            when you’re ready.
+            {t(
+              "You can work through the feedback at your own pace and export your replies and decisions when you’re ready."
+            )}
           </p>
         </div>
         <div class="package-export">
           <button class="primary-action" disabled={busy} onclick={importFeedback}
-            ><FolderOpen size={16} />Import and review feedback</button
+            ><FolderOpen size={16} />{t("Import and review feedback")}</button
           >
-          <p class="scope-hint">Your manuscript changes only when you accept a suggestion.</p>
+          <p class="scope-hint">
+            {t("Your manuscript changes only when you accept a suggestion.")}
+          </p>
         </div>
       </section>
-      <aside class="package-rounds feedback-details" aria-label="Review details">
-        <h2>Review details</h2>
+      <aside class="package-rounds feedback-details" aria-label={t("Review details")}>
+        <h2>{t("Review details")}</h2>
         <dl>
-          <dt>Manuscript</dt>
+          <dt>{t("Manuscript")}</dt>
           <dd>{received.round.title}</dd>
-          <dt>Review round</dt>
+          <dt>{t("Review round")}</dt>
           <dd>{received.round.name}</dd>
         </dl>
         {#if received.round.brief.trim()}
-          <h3>Your original brief</h3>
+          <h3>{t("Your original brief")}</h3>
           <p class="brief">{received.round.brief}</p>
         {/if}
       </aside>
     </div>
   {:else if round && (session || feedback)}
     <div class="workspace-layout">
-      {#if !local && showNavigation}<nav class="manuscript-nav" aria-label="Manuscript navigation">
+      {#if !local && showNavigation}<nav
+          class="manuscript-nav"
+          aria-label={t("Manuscript navigation")}
+        >
           <div class="nav-title">
             <BrandWordmark />
             <button
               class="icon"
-              aria-label="Hide manuscript navigation"
+              aria-label={t("Hide manuscript navigation")}
               onclick={() => (showNavigation = false)}><PanelLeftClose size={16} /></button
             >
           </div>
@@ -1473,7 +1513,7 @@
             <p class="round-name">{round.name}</p>
           </div>
           {#if round.brief}<details>
-              <summary>Writer’s brief</summary>
+              <summary>{t("Writer’s brief")}</summary>
               <p class="brief">{round.brief}</p>
             </details>{/if}
           {#each navigation as source, index}{#if index === 0 || source.chapter_id !== navigation[index - 1].chapter_id}<h3
@@ -1488,13 +1528,13 @@
               }}>{source.scene}</button
             >{/each}
         </nav>{/if}
-      <section class="manuscript-region" aria-label="Manuscript">
+      <section class="manuscript-region" aria-label={t("Manuscript")}>
         {#if showSearch}<div class="search-bar">
             <Search size={16} /><input
               type="search"
-              aria-label="Find in manuscript"
+              aria-label={t("Find in manuscript")}
               bind:value={search}
-              placeholder="Find in manuscript"
+              placeholder={t("Find in manuscript")}
               oninput={() => {
                 searchIndex = 0;
                 searchCount = prose?.find(search, 0) ?? 0;
@@ -1512,13 +1552,16 @@
             /><span aria-live="polite"
               >{search
                 ? searchCount
-                  ? `${(((searchIndex % searchCount) + searchCount) % searchCount) + 1} of ${searchCount}`
-                  : "No matches"
+                  ? t("{current} of {total}", {
+                      current: (((searchIndex % searchCount) + searchCount) % searchCount) + 1,
+                      total: searchCount,
+                    })
+                  : t("No matches")
                 : ""}</span
-            ><button disabled={!searchCount} onclick={() => findNext(-1)}>Previous</button><button
-              disabled={!searchCount}
-              onclick={() => findNext(1)}>Next</button
-            ><button onclick={closeSearch}>Done</button>
+            ><button disabled={!searchCount} onclick={() => findNext(-1)}>{t("Previous")}</button
+            ><button disabled={!searchCount} onclick={() => findNext(1)}>{t("Next")}</button><button
+              onclick={closeSearch}>{t("Done")}</button
+            >
           </div>{/if}
         <div class="manuscript-column">
           {#key `${round.id}:${manuscriptVersion}`}
@@ -1546,17 +1589,17 @@
               {#snippet toolbar()}
                 {#if !local && !showNavigation}<button
                     class="icon"
-                    aria-label="Show manuscript navigation"
+                    aria-label={t("Show manuscript navigation")}
                     onclick={() => (showNavigation = true)}><PanelLeftOpen size={16} /></button
                   >{/if}
                 <span class="compact-select"
                   ><select
                     class="compact-control"
-                    aria-label="Markup view"
+                    aria-label={t("Markup view")}
                     value={markup ? "all" : "simple"}
                     onchange={(e) => (markup = e.currentTarget.value === "all")}
-                    ><option value="simple">Simple markup</option><option value="all"
-                      >All markup</option
+                    ><option value="simple">{t("Simple markup")}</option><option value="all"
+                      >{t("All markup")}</option
                     ></select
                   ><ChevronDown size={14} /></span
                 >
@@ -1592,51 +1635,53 @@
               (e) => e.decision === "open" && e.change.kind === "suggestion"
             )}
             {#if suggestions.length}
-              <div class="review-menu-group" role="group" aria-label="Current review round">
-                <p class="review-menu-caption">Review round · {feedback.round.name}</p>
+              <div class="review-menu-group" role="group" aria-label={t("Current review round")}>
+                <p class="review-menu-caption">
+                  {t("Review round")} · {feedback.round.name}
+                </p>
                 <button
                   class="accept-decision"
-                  aria-label="Accept visible suggestions in this round"
+                  aria-label={t("Accept visible suggestions in this round")}
                   disabled={busy}
                   onclick={() => decide(suggestions, "accepted")}
-                  ><Check size={16} />Accept visible suggestions</button
+                  ><Check size={16} />{t("Accept visible suggestions")}</button
                 >
                 <button
                   class="reject-decision"
-                  aria-label="Reject visible suggestions in this round"
+                  aria-label={t("Reject visible suggestions in this round")}
                   disabled={busy}
                   onclick={() => decide(suggestions, "rejected")}
-                  ><X size={16} />Reject visible suggestions</button
+                  ><X size={16} />{t("Reject visible suggestions")}</button
                 >
               </div>
             {/if}
             {#if (filter === "all" || filter === "open") && legacy.some((a) => a.annotation.state === "open" && a.change.kind === "suggestion")}
-              <div class="review-menu-group" role="group" aria-label="Active scene prose">
-                <p class="review-menu-caption">Active scene prose</p>
+              <div class="review-menu-group" role="group" aria-label={t("Active scene prose")}>
+                <p class="review-menu-caption">{t("Active scene prose")}</p>
                 <button
                   class="accept-decision"
-                  aria-label="Accept visible suggestions on active scene prose"
+                  aria-label={t("Accept visible suggestions on active scene prose")}
                   disabled={busy}
                   onclick={() => bulkLegacy("accepted")}
-                  ><Check size={16} />Accept visible suggestions</button
+                  ><Check size={16} />{t("Accept visible suggestions")}</button
                 ><button
                   class="reject-decision"
-                  aria-label="Reject visible suggestions on active scene prose"
+                  aria-label={t("Reject visible suggestions on active scene prose")}
                   disabled={busy}
                   onclick={() => bulkLegacy("rejected")}
-                  ><X size={16} />Reject visible suggestions</button
+                  ><X size={16} />{t("Reject visible suggestions")}</button
                 >
               </div>
             {/if}
             <div class="review-menu-group">
               <button disabled={busy} onclick={() => openRound(feedback!.round.id)}
-                ><RefreshCw size={16} />Refresh manuscript</button
+                ><RefreshCw size={16} />{t("Refresh manuscript")}</button
               >
             </div>
             {#if reviewers.length}
               <div class="review-menu-group">
                 <label class="review-menu-field"
-                  >Send to editor<span class="compact-select"
+                  >{t("Send to editor")}<span class="compact-select"
                     ><select class="compact-control" bind:value={replyReviewer}
                       >{#each reviewers as reviewer}<option value={reviewer.id}
                           >{reviewer.name}</option
@@ -1644,7 +1689,7 @@
                     ><ChevronDown size={14} /></span
                   ></label
                 ><button disabled={busy} onclick={sendWriterReply}
-                  ><Download size={16} />Export replies and decisions</button
+                  ><Download size={16} />{t("Export replies and decisions")}</button
                 >
               </div>
             {/if}

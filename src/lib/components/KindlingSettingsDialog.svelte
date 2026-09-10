@@ -9,9 +9,10 @@
 -->
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { X, Loader2, Settings, User, Lightbulb, Palette } from "lucide-svelte";
+  import { X, Loader2, Settings, User, Lightbulb, Palette, Languages } from "lucide-svelte";
   import type { AppSettings } from "../types";
-  import { ui } from "../stores/ui.svelte";
+  import { ui, type Locale } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
   import Tooltip from "./Tooltip.svelte";
 
   let {
@@ -120,15 +121,15 @@
       <div class="flex items-center gap-2">
         <Settings class="w-5 h-5 text-press-accent-text" />
         <h2 id="settings-dialog-title" class="text-press-body-lg font-medium text-press-text">
-          Kindling Settings
+          {t("Kindling Settings")}
         </h2>
       </div>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="kindling-settings-close"
         >
           <X class="w-5 h-5" />
@@ -144,9 +145,40 @@
         </div>
       {:else}
         <p class="text-press-ui text-press-muted">
-          These settings apply to all your projects. Your contact information will appear on
-          manuscript title pages when exporting.
+          {t(
+            "These settings apply to all your projects. Your contact information will appear on manuscript title pages when exporting."
+          )}
         </p>
+
+        <!-- Section: Language -->
+        <fieldset>
+          <legend
+            class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
+          >
+            <Languages class="w-4 h-4" />
+            {t("Language")}
+          </legend>
+          <div class="flex gap-3">
+            {#each [{ value: "en", label: "English" }, { value: "zh-CN", label: "Simplified Chinese" }] as opt}
+              <label
+                class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors {ui.locale ===
+                opt.value
+                  ? 'border-press-accent bg-press-accent-wash text-press-text'
+                  : 'border-press-border bg-press-sunken text-press-muted hover:text-press-text'}"
+              >
+                <input
+                  type="radio"
+                  name="locale"
+                  value={opt.value}
+                  checked={ui.locale === opt.value}
+                  onchange={() => ui.setLocale(opt.value as Locale)}
+                  class="sr-only"
+                />
+                <span class="text-press-ui">{t(opt.label)}</span>
+              </label>
+            {/each}
+          </div>
+        </fieldset>
 
         <!-- Section: Appearance -->
         <fieldset>
@@ -154,7 +186,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Palette class="w-4 h-4" />
-            Appearance
+            {t("Appearance")}
           </legend>
           <div class="flex gap-3">
             {#each [{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }, { value: "system", label: "System" }] as opt}
@@ -173,12 +205,12 @@
                   onchange={() => ui.setTheme(opt.value as "dark" | "light" | "system")}
                   class="sr-only"
                 />
-                <span class="text-press-ui">{opt.label}</span>
+                <span class="text-press-ui">{t(opt.label)}</span>
               </label>
             {/each}
           </div>
           <p class="text-press-eyebrow text-press-muted mt-2">
-            "System" follows your operating system's appearance setting.
+            {t('"System" follows your operating system\'s appearance setting.')}
           </p>
         </fieldset>
 
@@ -188,7 +220,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Lightbulb class="w-4 h-4" />
-            Guidance
+            {t("Guidance")}
           </legend>
           <label class="flex items-center gap-2 cursor-pointer">
             <input
@@ -197,11 +229,12 @@
               onchange={(e) => ui.setGuidanceEnabled((e.target as HTMLInputElement).checked)}
               class="rounded border-press-border text-press-accent-text focus:ring-press-focus"
             />
-            <span class="text-press-ui text-press-text">Show guidance tips</span>
+            <span class="text-press-ui text-press-text">{t("Show guidance tips")}</span>
           </label>
           <p class="text-press-eyebrow text-press-muted mt-1 ml-6">
-            Contextual tips on first visit to sidebar, scene panel, and references. Can be disabled
-            for experienced users.
+            {t(
+              "Contextual tips on first visit to sidebar, scene panel, and references. Can be disabled for experienced users."
+            )}
           </p>
         </fieldset>
 
@@ -211,23 +244,25 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <User class="w-4 h-4" />
-            Author Information
+            {t("Author Information")}
           </legend>
           <div class="space-y-3">
             <div>
               <label for="author-name" class="block text-press-ui text-press-muted mb-1">
-                Author Name
+                {t("Author Name")}
               </label>
               <input
                 id="author-name"
                 type="text"
                 bind:value={authorName}
-                placeholder="Your legal name"
+                placeholder={t("Your legal name")}
                 disabled={saving}
                 class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
               />
               <p class="text-press-eyebrow text-press-muted mt-1">
-                Used in contact info on title pages. Projects can override this with a pen name.
+                {t(
+                  "Used in contact info on title pages. Projects can override this with a pen name."
+                )}
               </p>
             </div>
           </div>
@@ -236,21 +271,23 @@
         <!-- Section: Contact Information -->
         <fieldset>
           <legend class="block text-press-ui font-medium text-press-accent-text mb-3"
-            >Contact Information</legend
+            >{t("Contact Information")}</legend
           >
           <p class="text-press-eyebrow text-press-muted mb-3">
-            Optional details for manuscript title pages. Use any format that works for your country.
+            {t(
+              "Optional details for manuscript title pages. Use any format that works for your country."
+            )}
           </p>
           <div class="space-y-3">
             <div>
               <label for="address-line1" class="block text-press-ui text-press-muted mb-1">
-                Address Line 1
+                {t("Address Line 1")}
               </label>
               <input
                 id="address-line1"
                 type="text"
                 bind:value={addressLine1}
-                placeholder="Street address or PO Box"
+                placeholder={t("Street address or PO Box")}
                 disabled={saving}
                 class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
               />
@@ -258,13 +295,13 @@
 
             <div>
               <label for="address-line2" class="block text-press-ui text-press-muted mb-1">
-                Address Line 2
+                {t("Address Line 2")}
               </label>
               <input
                 id="address-line2"
                 type="text"
                 bind:value={addressLine2}
-                placeholder="City, State/Province, Postal Code, Country"
+                placeholder={t("City, State/Province, Postal Code, Country")}
                 disabled={saving}
                 class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
               />
@@ -272,7 +309,9 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label for="phone" class="block text-press-ui text-press-muted mb-1"> Phone </label>
+                <label for="phone" class="block text-press-ui text-press-muted mb-1">
+                  {t("Phone")}
+                </label>
                 <input
                   id="phone"
                   type="tel"
@@ -284,7 +323,9 @@
               </div>
 
               <div>
-                <label for="email" class="block text-press-ui text-press-muted mb-1"> Email </label>
+                <label for="email" class="block text-press-ui text-press-muted mb-1">
+                  {t("Email")}
+                </label>
                 <input
                   id="email"
                   type="email"
@@ -315,7 +356,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         disabled={saving}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         type="button"
@@ -325,9 +366,9 @@
       >
         {#if saving}
           <Loader2 class="w-4 h-4 animate-spin" />
-          Saving...
+          {t("Saving...")}
         {:else}
-          Save Settings
+          {t("Save Settings")}
         {/if}
       </button>
     </div>

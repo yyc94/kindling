@@ -6,6 +6,7 @@
   import type { ReferenceTypeOption } from "../referenceTypes";
   import FieldRenderer from "./FieldRenderer.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     referenceType,
@@ -111,7 +112,7 @@
   async function handleSave() {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      error = "Name cannot be empty";
+      error = t("Name cannot be empty");
       return;
     }
 
@@ -137,13 +138,14 @@
       });
       onClose();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to save reference";
+      error = e instanceof Error ? e.message : t("Failed to save reference");
     } finally {
       saving = false;
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return;
     if (event.key === "Escape") {
       onClose();
     } else if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !saving) {
@@ -179,15 +181,17 @@
     <!-- Header -->
     <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
       <h2 id="reference-dialog-title" class="text-press-body-lg font-medium text-press-text">
-        {reference ? "Edit" : "Add"}
-        {referenceType.label}
+        {t("{action} {type}", {
+          action: t(reference ? "Edit" : "Add"),
+          type: t(referenceType.label),
+        })}
       </h2>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="reference-close"
         >
           <X class="w-5 h-5" />
@@ -198,47 +202,51 @@
     <!-- Content -->
     <div class="p-4 space-y-4">
       <div>
-        <label for="reference-name" class="block text-press-ui text-press-muted mb-1">Name</label>
+        <label for="reference-name" class="block text-press-ui text-press-muted mb-1"
+          >{t("Name")}</label
+        >
         <input
           id="reference-name"
           bind:this={nameInput}
           bind:value={name}
           type="text"
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
-          placeholder="Enter name..."
+          placeholder={t("Enter name...")}
           disabled={saving}
         />
       </div>
 
       <div>
         <label for="reference-description" class="block text-press-ui text-press-muted mb-1">
-          Description
+          {t("Description")}
         </label>
         <textarea
           id="reference-description"
           rows="4"
           bind:value={description}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent resize-none"
-          placeholder="Optional description"
+          placeholder={t("Optional description")}
           disabled={saving}
         ></textarea>
       </div>
 
       <div>
-        <label for="reference-notes" class="block text-press-ui text-press-muted mb-1">Notes</label>
+        <label for="reference-notes" class="block text-press-ui text-press-muted mb-1"
+          >{t("Notes")}</label
+        >
         <textarea
           id="reference-notes"
           rows="3"
           bind:value={notes}
           class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent resize-none"
-          placeholder="Optional notes"
+          placeholder={t("Optional notes")}
           disabled={saving}
         ></textarea>
       </div>
 
       {#if !fieldsLoading && visibleFieldDefs.length > 0}
         <div class="space-y-3">
-          <span class="block text-press-ui text-press-muted">Custom Fields</span>
+          <span class="block text-press-ui text-press-muted">{t("Custom Fields")}</span>
           {#each visibleFieldDefs as def (def.id)}
             <FieldRenderer
               definition={def}
@@ -252,7 +260,7 @@
 
       <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-press-ui text-press-muted">Legacy Attributes</span>
+          <span class="text-press-ui text-press-muted">{t("Legacy Attributes")}</span>
           <button
             type="button"
             onclick={addAttributeRow}
@@ -260,11 +268,11 @@
             disabled={saving}
           >
             <Plus class="w-3 h-3" />
-            Add attribute
+            {t("Add attribute")}
           </button>
         </div>
         {#if attributeRows.length === 0}
-          <p class="text-press-eyebrow text-press-muted">No attributes yet.</p>
+          <p class="text-press-eyebrow text-press-muted">{t("No attributes yet.")}</p>
         {:else}
           <div class="space-y-2">
             {#each attributeRows as row (row.id)}
@@ -272,14 +280,14 @@
                 <input
                   type="text"
                   bind:value={row.key}
-                  placeholder="Key"
+                  placeholder={t("Key")}
                   class="flex-1 bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 text-press-ui focus:outline-none focus:border-press-accent"
                   disabled={saving}
                 />
                 <input
                   type="text"
                   bind:value={row.value}
-                  placeholder="Value"
+                  placeholder={t("Value")}
                   class="flex-1 bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 text-press-ui focus:outline-none focus:border-press-accent"
                   disabled={saving}
                 />
@@ -287,7 +295,7 @@
                   type="button"
                   onclick={() => removeAttributeRow(row.id)}
                   class="text-press-muted hover:text-press-error p-1"
-                  aria-label="Remove attribute"
+                  aria-label={t("Remove attribute")}
                   disabled={saving}
                 >
                   <Trash2 class="w-4 h-4" />
@@ -311,7 +319,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         disabled={saving}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         data-testid="reference-save"
@@ -322,9 +330,9 @@
       >
         {#if saving}
           <Loader2 class="w-4 h-4 animate-spin" />
-          Saving...
+          {t("Saving...")}
         {:else}
-          Save
+          {t("Save")}
         {/if}
       </button>
     </div>

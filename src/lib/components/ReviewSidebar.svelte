@@ -2,6 +2,8 @@
   import { tick, type Snippet } from "svelte";
   import { ChevronUp, ChevronDown, MessageSquare, Check, X, MoreHorizontal } from "lucide-svelte";
   import type { ReviewItem } from "../utils/reviewItems";
+  import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
   let {
     items,
     selected,
@@ -79,7 +81,7 @@
       reply = "";
       void tick().then(() => {
         if (composing)
-          container?.querySelector<HTMLTextAreaElement>('[aria-label="Comment"]')?.focus();
+          container?.querySelector<HTMLTextAreaElement>("[data-review-comment]")?.focus();
         else
           container?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: "nearest" });
       });
@@ -93,44 +95,45 @@
   onclick={dismissOptions}
 />
 
-<aside class="review-sidebar" bind:this={container} aria-label="Editorial feedback">
-  <div class="tabs" role="tablist" aria-label="Inspector">
+<aside class="review-sidebar" bind:this={container} aria-label={t("Editorial feedback")}>
+  <div class="tabs" role="tablist" aria-label={t("Inspector")}>
     <button role="tab" aria-selected={tab === "review"} onclick={() => (tab = "review")}
-      >Review <span>{items.filter((i) => i.state === "open").length}</span></button
+      >{t("Review")} <span>{items.filter((i) => i.state === "open").length}</span></button
     >
     {#if references}<button
         role="tab"
         aria-selected={tab === "references"}
-        onclick={() => (tab = "references")}>References</button
+        onclick={() => (tab = "references")}>{t("References")}</button
       >{/if}
   </div>
   {#if tab === "references"}{@render references?.()}{:else}
     <div class="review-controls">
       <span class="compact-select"
-        ><select aria-label="Show feedback" bind:value={filter}
-          ><option value="open">Pending feedback</option><option value="all">All feedback</option
-          ><option value="resolved">Resolved comments</option><option value="accepted"
-            >Accepted</option
-          ><option value="rejected">Rejected</option></select
+        ><select aria-label={t("Show feedback")} bind:value={filter}
+          ><option value="open">{t("Pending feedback")}</option><option value="all"
+            >{t("All feedback")}</option
+          ><option value="resolved">{t("Resolved comments")}</option><option value="accepted"
+            >{t("Accepted")}</option
+          ><option value="rejected">{t("Rejected")}</option></select
         ><ChevronDown size={14} /></span
       >
       <button
-        title="Previous annotation"
-        aria-label="Previous annotation"
+        title={t("Previous annotation")}
+        aria-label={t("Previous annotation")}
         disabled={!visible.length}
         onclick={() => onStep(-1)}><ChevronUp size={16} /></button
       >
       <button
-        title="Next annotation"
-        aria-label="Next annotation"
+        title={t("Next annotation")}
+        aria-label={t("Next annotation")}
         disabled={!visible.length}
         onclick={() => onStep(1)}><ChevronDown size={16} /></button
       >
       <details bind:this={optionsMenu} onkeydowncapture={escapeOptions}>
-        <summary aria-label="Review options"><MoreHorizontal size={18} /></summary>
+        <summary aria-label={t("Review options")}><MoreHorizontal size={18} /></summary>
         <div class="review-menu">
           <label class="menu-identity"
-            >Your name<input
+            >{t("Your name")}<input
               required
               aria-invalid={!name.trim()}
               value={name}
@@ -143,34 +146,35 @@
     </div>
     {#if enteringName}<div class="identity">
         <label
-          >Name shown with feedback<input
+          >{t("Name shown with feedback")}<input
             required
             aria-invalid={!name.trim()}
             aria-describedby="review-name-help"
             value={name}
             oninput={(e) => onName(e.currentTarget.value)}
-            placeholder="Your name"
+            placeholder={t("Your name")}
           /></label
         >
         <p id="review-name-help" class="identity-hint">
-          Enter your name to add comments and export feedback.
+          {t("Enter your name to add comments and export feedback.")}
         </p>
-        <button disabled={!name.trim()} onclick={() => (enteringName = false)}>Done</button>
+        <button disabled={!name.trim()} onclick={() => (enteringName = false)}>{t("Done")}</button>
       </div>{/if}
     <div class="threads">
       {#if composing}<section class="compose">
           <label
-            >Comment<textarea
-              aria-label="Comment"
+            >{t("Comment")}<textarea
+              data-review-comment
+              aria-label={t("Comment")}
               bind:value={comment}
               rows="4"
-              placeholder="What would you like the writer to consider?"
+              placeholder={t("What would you like the writer to consider?")}
             ></textarea></label
           >
           <div class="actions">
             <button disabled={busy || !name.trim() || !comment.trim()} onclick={onComment}
-              >Save comment</button
-            ><button onclick={onCancelComment}>Cancel</button>
+              >{t("Save comment")}</button
+            ><button onclick={onCancelComment}>{t("Cancel")}</button>
           </div>
         </section>{/if}
       {#each visible as item (item.id)}
@@ -181,51 +185,57 @@
             onclick={() => onSelect(item.id)}
           >
             <span class="author"
-              >{item.author || "Review"}<span class="state"
+              >{item.author || t("Review")}<span class="state"
                 >{item.unavailable
-                  ? "Inactive prose"
+                  ? t("Inactive prose")
                   : item.state === "open"
                     ? item.kind === "comment"
-                      ? "Comment"
-                      : "Suggested edit"
-                    : item.state}</span
+                      ? t("Comment")
+                      : t("Suggested edit")
+                    : t(item.state)}</span
               ></span
             >
             {#if selected !== item.id || !item.messages.length}<span class="excerpt"
-                >{item.messages[0]?.text || item.excerpt || "Formatting change"}</span
+                >{item.messages[0]?.text || item.excerpt || t("Formatting change")}</span
               >{/if}
           </button>
           {#if selected === item.id}
             {#if item.kind === "suggestion"}<div class="comparison">
-                {#if item.conflict}<h3>Original passage</h3>{/if}
-                <div class="original-prose">{@html item.before || "Insertion point"}</div>
-                {#if item.conflict}<h3>Current passage</h3>
-                  <p>{item.current || "Empty passage"}</p>
-                  <h3>Suggested passage</h3>{/if}
-                <div class="suggested-prose">{@html item.after || "Delete passage"}</div>
+                {#if item.conflict}<h3>{t("Original passage")}</h3>{/if}
+                <div class="original-prose">{@html item.before || t("Insertion point")}</div>
+                {#if item.conflict}<h3>{t("Current passage")}</h3>
+                  <p>{item.current || t("Empty passage")}</p>
+                  <h3>{t("Suggested passage")}</h3>{/if}
+                <div class="suggested-prose">{@html item.after || t("Delete passage")}</div>
               </div>{/if}
             {#if item.conflict && item.state === "open"}<p class="conflict">
                 {item.kind === "suggestion" || item.reanchor
-                  ? "This passage has changed. Select where this feedback belongs in the manuscript."
-                  : "This passage has changed since the review. The original discussion remains available below."}
+                  ? t(
+                      "This passage has changed. Select where this feedback belongs in the manuscript."
+                    )
+                  : t(
+                      "This passage has changed since the review. The original discussion remains available below."
+                    )}
               </p>{/if}
             {#each item.messages as note}<div class="message">
                 <span class="author"
-                  >{note.author}<time>{new Date(note.created_at).toLocaleDateString()}</time></span
+                  >{note.author}<time
+                    >{new Date(note.created_at).toLocaleDateString(ui.locale)}</time
+                  ></span
                 >
                 <p>{note.text}</p>
               </div>{/each}
             {#if item.unavailable}<p class="hint">{item.unavailable}</p>{:else if item.locked}<p
                 class="hint"
               >
-                Unlock this scene to change its review.
+                {t("Unlock this scene to change its review.")}
               </p>{:else}
               <label class="reply"
-                >Reply<textarea
-                  aria-label="Reply"
+                >{t("Reply")}<textarea
+                  aria-label={t("Reply")}
                   bind:value={reply}
                   rows="2"
-                  placeholder="Reply to this conversation…"
+                  placeholder={t("Reply to this conversation…")}
                 ></textarea></label
               >
               <div class="actions">
@@ -236,10 +246,10 @@
                     if (await onReply(item.id, text)) {
                       if (selected === item.id && reply === text) reply = "";
                     }
-                  }}>Reply</button
+                  }}>{t("Reply")}</button
                 >
                 {#if item.resolve}<button disabled={busy} onclick={() => onResolve(item.id)}
-                    >{item.state === "resolved" ? "Reopen thread" : "Resolve thread"}</button
+                    >{t(item.state === "resolved" ? "Reopen thread" : "Resolve thread")}</button
                   >{/if}
               </div>
               {#if item.decide && item.kind === "suggestion" && item.state === "open"}<div
@@ -248,27 +258,36 @@
                   <button
                     class="accept-decision"
                     disabled={busy || item.conflict}
-                    onclick={() => onDecide(item.id, "accepted")}><Check size={16} />Accept</button
+                    onclick={() => onDecide(item.id, "accepted")}
+                    ><Check size={16} />{t("Accept")}</button
                   >
                   <button
                     class="reject-decision"
                     disabled={busy}
-                    onclick={() => onDecide(item.id, "rejected")}><X size={16} />Reject</button
+                    onclick={() => onDecide(item.id, "rejected")}
+                    ><X size={16} />{t("Reject")}</button
                   >
                   {#if item.conflict}<button
                       disabled={busy || !canReanchor}
                       onclick={() => onDecide(item.id, "accepted", true)}
-                      >Apply to selected passage</button
+                      >{t("Apply to selected passage")}</button
                     >{/if}
                 </div>{/if}
               {#if item.conflict && item.kind === "comment" && item.reanchor}<button
                   disabled={busy || !canReanchor}
-                  onclick={() => onDecide(item.id, "reanchor", true)}>Re-anchor to selection</button
+                  onclick={() => onDecide(item.id, "reanchor", true)}
+                  >{t("Re-anchor to selection")}</button
                 >{/if}
               {#if item.withdraw}<button
                   class="quiet"
                   disabled={busy}
-                  onclick={() => onWithdraw(item.id)}>Withdraw {item.kind}</button
+                  onclick={() => onWithdraw(item.id)}
+                  >{t("Withdraw {kind}", {
+                    kind:
+                      ui.locale === "zh-CN"
+                        ? t(item.kind === "comment" ? "Comment" : "Suggested edit")
+                        : item.kind,
+                  })}</button
                 >{/if}
             {/if}
           {/if}
@@ -276,8 +295,8 @@
       {/each}
       {#if !visible.length && !composing}<div class="empty">
           <MessageSquare size={24} />
-          <p>No feedback in this view.</p>
-          <p>Select a passage to comment, or use Suggesting to propose an edit.</p>
+          <p>{t("No feedback in this view.")}</p>
+          <p>{t("Select a passage to comment, or use Suggesting to propose an edit.")}</p>
         </div>{/if}
     </div>
   {/if}

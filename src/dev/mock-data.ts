@@ -1,6 +1,5 @@
 /**
- * Seed data for the browser mock Tauri backend.
- * Used when running `npm run dev` (Vite only) so Cursor can drive the full UI.
+ * Shared fixture data for frontend tests.
  */
 
 import type {

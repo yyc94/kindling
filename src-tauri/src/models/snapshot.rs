@@ -175,14 +175,14 @@ impl SnapshotData {
         // Count scene prose
         for scene in &self.scenes {
             if let Some(prose) = &scene.prose {
-                count += prose.split_whitespace().count();
+                count += crate::db::writing::count_words(prose) as usize;
             }
         }
 
         // Count beat prose
         for beat in &self.beats {
             if let Some(prose) = &beat.prose {
-                count += prose.split_whitespace().count();
+                count += crate::db::writing::count_words(prose) as usize;
             }
         }
 

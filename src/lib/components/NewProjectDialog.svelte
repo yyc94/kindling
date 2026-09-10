@@ -6,6 +6,7 @@
   import type { Project, ProjectType, StoryTemplate } from "../types";
   import TemplateBrowser from "./TemplateBrowser.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     onClose,
@@ -16,7 +17,7 @@
   } = $props();
 
   let projectType = $state<ProjectType>("novel");
-  let name = $state("My Project");
+  let name = $state(t("My Project"));
   let targetLength = $state<"short" | "feature" | "long_feature">("feature");
   let selectedTemplate = $state<StoryTemplate | null>(null);
   let showTemplateBrowser = $state(false);
@@ -39,7 +40,7 @@
   async function handleCreate() {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      error = "Name cannot be empty";
+      error = t("Name cannot be empty");
       return;
     }
 
@@ -71,13 +72,14 @@
       onComplete?.(project);
       onClose();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to create project";
+      error = e instanceof Error ? e.message : t("Failed to create project");
     } finally {
       saving = false;
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return;
     if (event.key === "Escape") {
       onClose();
     } else if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !saving) {
@@ -111,14 +113,14 @@
   >
     <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
       <h2 id="new-project-dialog-title" class="text-press-body-lg font-medium text-press-text">
-        New Project
+        {t("New Project")}
       </h2>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="new-project-close"
         >
           <X class="w-5 h-5" />
@@ -128,7 +130,9 @@
 
     <div class="p-4 space-y-4">
       <div>
-        <label class="block text-press-ui font-medium text-press-muted mb-2">Project type</label>
+        <label class="block text-press-ui font-medium text-press-muted mb-2"
+          >{t("Project type")}</label
+        >
         <div class="flex gap-2">
           <button
             type="button"
@@ -139,7 +143,7 @@
               : 'border-press-border hover:border-press-accent'}"
           >
             <BookOpen class="w-5 h-5 text-press-accent-text" />
-            <span class="text-press-text font-medium">Novel</span>
+            <span class="text-press-text font-medium">{t("Novel")}</span>
           </button>
           <button
             type="button"
@@ -150,14 +154,14 @@
               : 'border-press-border hover:border-press-accent'}"
           >
             <Film class="w-5 h-5 text-press-accent-text" />
-            <span class="text-press-text font-medium">Screenplay</span>
+            <span class="text-press-text font-medium">{t("Screenplay")}</span>
           </button>
         </div>
       </div>
 
       <div>
         <label for="new-project-name" class="block text-press-ui font-medium text-press-muted mb-2">
-          Name
+          {t("Name")}
         </label>
         <input
           id="new-project-name"
@@ -165,7 +169,7 @@
           bind:value={name}
           type="text"
           class={inputClass}
-          placeholder="Enter project name..."
+          placeholder={t("Enter project name...")}
           disabled={saving}
         />
       </div>
@@ -173,19 +177,19 @@
       {#if projectType === "screenplay"}
         <div>
           <label for="target-length" class="block text-press-ui font-medium text-press-muted mb-2">
-            Target length
+            {t("Target length")}
           </label>
           <select id="target-length" bind:value={targetLength} class={inputClass} disabled={saving}>
-            <option value="short">Short (&lt;30 pages)</option>
-            <option value="feature">Feature (90–120 pages)</option>
-            <option value="long_feature">Long feature (120–180 pages)</option>
+            <option value="short">{t("Short (<30 pages)")}</option>
+            <option value="feature">{t("Feature (90–120 pages)")}</option>
+            <option value="long_feature">{t("Long feature (120–180 pages)")}</option>
           </select>
         </div>
       {/if}
 
       <div>
         <label class="block text-press-ui font-medium text-press-muted mb-2"
-          >Structure template</label
+          >{t("Structure template")}</label
         >
         {#if selectedTemplate}
           <div
@@ -199,7 +203,7 @@
               type="button"
               onclick={() => (selectedTemplate = null)}
               class="text-press-muted hover:text-press-text p-0.5"
-              aria-label="Remove template"
+              aria-label={t("Remove template")}
             >
               <X class="w-3.5 h-3.5" />
             </button>
@@ -211,7 +215,7 @@
             class="w-full text-left px-3 py-2 text-press-ui text-press-muted bg-press-sunken border border-press-border rounded-lg hover:border-press-accent transition-colors"
             disabled={saving}
           >
-            Browse templates...
+            {t("Browse templates...")}
           </button>
         {/if}
       </div>
@@ -228,7 +232,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         disabled={saving}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         data-testid="new-project-create"
@@ -240,7 +244,7 @@
         {#if saving}
           <Loader2 class="w-4 h-4 animate-spin" />
         {/if}
-        Create
+        {t("Create")}
       </button>
     </div>
   </div>

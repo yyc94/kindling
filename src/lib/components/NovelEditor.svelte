@@ -5,8 +5,10 @@
   import Underline from "@tiptap/extension-underline";
   import TextAlign from "@tiptap/extension-text-align";
   import { trackEditorPosition } from "../utils/editorPosition";
+  import { countWordsInText } from "../utils/wordCount";
   import { Loader2 } from "lucide-svelte";
   import ProseToolbar from "./ProseToolbar.svelte";
+  import { t } from "../i18n.svelte";
 
   interface Props {
     content: string;
@@ -61,13 +63,7 @@
 
   function updateWordCount() {
     if (!editor) return;
-    const text = editor.getText();
-    // Count words by splitting on whitespace and filtering empty strings
-    const words = text
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-    wordCount = words.length;
+    wordCount = countWordsInText(editor.getText());
   }
 
   onMount(() => {
@@ -188,16 +184,16 @@
       {#if saveStatus === "saving"}
         <div class="save-status saving" data-testid="save-indicator">
           <Loader2 class="w-3.5 h-3.5 animate-spin" />
-          <span>Saving...</span>
+          <span>{t("Saving...")}</span>
         </div>
       {:else if saveStatus === "error"}
         <div class="save-status error">
-          <span>Error saving</span>
+          <span>{t("Error saving")}</span>
         </div>
       {/if}
       <div class="word-count">
         {wordCount}
-        {wordCount === 1 ? "word" : "words"}
+        {t(wordCount === 1 ? "word" : "words")}
       </div>
     </ProseToolbar>
   {/if}

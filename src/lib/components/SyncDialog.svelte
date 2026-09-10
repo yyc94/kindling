@@ -10,6 +10,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import type { SyncPreview, ReimportSummary } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   interface Props {
     projectId: string;
@@ -104,15 +105,19 @@
     <!-- Header -->
     <div class="flex items-center justify-between px-8 py-6 border-b border-press-border/50">
       <div>
-        <h2 class="text-press-h2 font-heading font-semibold text-press-text">Sync from Source</h2>
-        <p class="text-press-muted text-press-ui mt-1">Review and select items to import</p>
+        <h2 class="text-press-h2 font-heading font-semibold text-press-text">
+          {t("Sync from Source")}
+        </h2>
+        <p class="text-press-muted text-press-ui mt-1">
+          {t("Review and select items to import")}
+        </p>
       </div>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           data-testid="sync-dialog-close"
           onclick={onClose}
           class="p-2 text-press-muted hover:text-press-text rounded-lg hover:bg-press-sunken transition-colors"
-          aria-label="Close"
+          aria-label={t("Close")}
         >
           <X class="w-6 h-6" />
         </button>
@@ -129,9 +134,9 @@
           >
             <RefreshCw class="w-8 h-8 text-press-success" />
           </div>
-          <p class="text-press-text text-press-body-lg font-medium">All synced!</p>
+          <p class="text-press-text text-press-body-lg font-medium">{t("All synced!")}</p>
           <p class="text-press-muted text-press-ui mt-1">
-            Your project is up to date with the source file.
+            {t("Your project is up to date with the source file.")}
           </p>
         </div>
       </div>
@@ -149,27 +154,30 @@
                 <Plus class="w-4 h-4 text-press-success" />
               </div>
               <div>
-                <h3 class="text-press-ui font-medium text-press-text">New Items</h3>
+                <h3 class="text-press-ui font-medium text-press-text">{t("New Items")}</h3>
                 <p class="text-press-eyebrow text-press-muted">
-                  {selectedAdditions.size} of {syncPreview.additions.length} selected
+                  {t("{selected} of {total} selected", {
+                    selected: selectedAdditions.size,
+                    total: syncPreview.additions.length,
+                  })}
                 </p>
               </div>
             </div>
             {#if syncPreview.additions.length > 0}
               <div class="flex gap-2 text-press-eyebrow">
-                <Tooltip text="Select all" position="bottom">
+                <Tooltip text={t("Select all")} position="bottom">
                   <button
                     onclick={selectAllAdditions}
                     class="text-press-muted hover:text-press-accent-text transition-colors"
-                    >All</button
+                    >{t("All")}</button
                   >
                 </Tooltip>
                 <span class="text-press-muted">|</span>
-                <Tooltip text="Deselect all" position="bottom">
+                <Tooltip text={t("Deselect all")} position="bottom">
                   <button
                     onclick={deselectAllAdditions}
                     class="text-press-muted hover:text-press-accent-text transition-colors"
-                    >None</button
+                    >{t("None")}</button
                   >
                 </Tooltip>
               </div>
@@ -179,7 +187,7 @@
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
             {#if syncPreview.additions.length === 0}
               <div class="text-center py-12 text-press-muted">
-                <p>No new items to import</p>
+                <p>{t("No new items to import")}</p>
               </div>
             {:else}
               {#each syncPreview.additions as addition (addition.id)}
@@ -197,13 +205,13 @@
                       <span
                         class="px-2 py-0.5 text-press-eyebrow font-medium rounded-full bg-press-success-wash text-press-success uppercase"
                       >
-                        {addition.item_type}
+                        {t(addition.item_type)}
                       </span>
                       <span class="text-press-text font-medium truncate">{addition.title}</span>
                     </div>
                     {#if addition.parent_title}
                       <p class="text-press-eyebrow text-press-muted mt-1">
-                        in {addition.parent_title}
+                        {t("in {chapter}", { chapter: addition.parent_title })}
                       </p>
                     {/if}
                   </div>
@@ -223,27 +231,30 @@
                 <Pencil class="w-4 h-4 text-press-warning" />
               </div>
               <div>
-                <h3 class="text-press-ui font-medium text-press-text">Changes</h3>
+                <h3 class="text-press-ui font-medium text-press-text">{t("Changes")}</h3>
                 <p class="text-press-eyebrow text-press-muted">
-                  {selectedChanges.size} of {syncPreview.changes.length} selected
+                  {t("{selected} of {total} selected", {
+                    selected: selectedChanges.size,
+                    total: syncPreview.changes.length,
+                  })}
                 </p>
               </div>
             </div>
             {#if syncPreview.changes.length > 0}
               <div class="flex gap-2 text-press-eyebrow">
-                <Tooltip text="Select all" position="bottom">
+                <Tooltip text={t("Select all")} position="bottom">
                   <button
                     onclick={selectAllChanges}
                     class="text-press-muted hover:text-press-accent-text transition-colors"
-                    >All</button
+                    >{t("All")}</button
                   >
                 </Tooltip>
                 <span class="text-press-muted">|</span>
-                <Tooltip text="Deselect all" position="bottom">
+                <Tooltip text={t("Deselect all")} position="bottom">
                   <button
                     onclick={deselectAllChanges}
                     class="text-press-muted hover:text-press-accent-text transition-colors"
-                    >None</button
+                    >{t("None")}</button
                   >
                 </Tooltip>
               </div>
@@ -253,7 +264,7 @@
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
             {#if syncPreview.changes.length === 0}
               <div class="text-center py-12 text-press-muted">
-                <p>No changes detected</p>
+                <p>{t("No changes detected")}</p>
               </div>
             {:else}
               {#each syncPreview.changes as change (change.id)}
@@ -273,24 +284,25 @@
                       <span
                         class="px-2 py-0.5 text-press-eyebrow font-medium rounded-full bg-press-warning-wash text-press-warning uppercase"
                       >
-                        {change.item_type}
+                        {t(change.item_type)}
                       </span>
                       <span class="text-press-text font-medium truncate">{change.item_title}</span>
-                      <span class="text-press-muted text-press-eyebrow">({change.field})</span>
+                      <span class="text-press-muted text-press-eyebrow">({t(change.field)})</span>
                     </div>
                     {#if change.field === "prose"}
                       <div class="space-y-3" data-testid="sync-prose-diff">
                         <p class="text-press-small text-press-muted">
-                          Accepting replaces the prose shown below. Scene replacements without beat
-                          comments keep planning beats and put the incoming text in the first beat.
+                          {t(
+                            "Accepting replaces the prose shown below. Scene replacements without beat comments keep planning beats and put the incoming text in the first beat."
+                          )}
                         </p>
                         <div>
-                          <p class="text-press-small text-press-muted">Current prose</p>
-                          <div class="prose-review">{change.current_value || "(empty)"}</div>
+                          <p class="text-press-small text-press-muted">{t("Current prose")}</p>
+                          <div class="prose-review">{change.current_value || t("(empty)")}</div>
                         </div>
                         <div>
-                          <p class="text-press-small text-press-muted">Incoming prose</p>
-                          <div class="prose-review">{change.new_value || "(empty)"}</div>
+                          <p class="text-press-small text-press-muted">{t("Incoming prose")}</p>
+                          <div class="prose-review">{change.new_value || t("(empty)")}</div>
                         </div>
                       </div>
                     {:else}
@@ -298,12 +310,12 @@
                         <div class="flex gap-2 text-press-error">
                           <span class="flex-shrink-0">-</span>
                           <span class="line-through text-press-disabled-text truncate"
-                            >{change.current_value || "(empty)"}</span
+                            >{change.current_value || t("(empty)")}</span
                           >
                         </div>
                         <div class="flex gap-2 text-press-success">
                           <span class="flex-shrink-0">+</span>
-                          <span class="truncate">{change.new_value || "(empty)"}</span>
+                          <span class="truncate">{change.new_value || t("(empty)")}</span>
                         </div>
                       </div>
                     {/if}
@@ -316,25 +328,23 @@
       </div>
     {/if}
 
-    {#if error}<p role="alert" class="px-8 text-press-error">Sync failed: {error}</p>{/if}
+    {#if error}<p role="alert" class="px-8 text-press-error">
+        {t("Sync failed: {error}", { error })}
+      </p>{/if}
 
     <!-- Footer -->
     <div
       class="flex items-center justify-between px-8 py-5 border-t border-press-border/50 bg-press-sunken"
     >
       <p class="text-press-muted text-press-ui">
-        {selectedAdditions.size + selectedChanges.size} item{selectedAdditions.size +
-          selectedChanges.size !==
-        1
-          ? "s"
-          : ""} selected
+        {t("{count} items selected", { count: selectedAdditions.size + selectedChanges.size })}
       </p>
       <div class="flex gap-4">
         <button
           onclick={onClose}
           class="px-6 py-2.5 text-press-muted hover:text-press-text rounded-lg hover:bg-press-sunken transition-colors"
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           data-testid="sync-confirm"
@@ -344,9 +354,9 @@
         >
           {#if syncing}
             <Loader2 class="w-4 h-4 animate-spin" />
-            Syncing...
+            {t("Syncing...")}
           {:else}
-            Apply Sync
+            {t("Apply Sync")}
           {/if}
         </button>
       </div>

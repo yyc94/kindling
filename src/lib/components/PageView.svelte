@@ -1,5 +1,6 @@
 <script lang="ts">
   import NovelEditor from "./NovelEditor.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     content,
@@ -22,15 +23,17 @@
 
 <section>
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">Scene Prose</h2>
-    <span class="text-press-eyebrow text-press-muted">{wordCount} words</span>
+    <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">
+      {t("Scene Prose")}
+    </h2>
+    <span class="text-press-eyebrow text-press-muted">{wordCount} {t("words")}</span>
   </div>
   <div class="bg-press-surface rounded-lg overflow-hidden" style="min-height: 50rem;">
     <NovelEditor
       {projectId}
       {sceneId}
       {content}
-      placeholder={readonly ? "Scene is locked" : "Write your scene prose here..."}
+      placeholder={t(readonly ? "Scene is locked" : "Write your scene prose here...")}
       {readonly}
       {saveStatus}
       {onUpdate}

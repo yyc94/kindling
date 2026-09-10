@@ -20,6 +20,7 @@
     X,
     Zap,
   } from "lucide-svelte";
+  import { t } from "../i18n.svelte";
 
   let { onClose }: { onClose: () => void } = $props();
 
@@ -45,12 +46,12 @@
   >
     <div class="flex items-center justify-between p-6 border-b border-press-border shrink-0">
       <h2 id="quick-start-title" class="text-press-h3 font-heading font-semibold text-press-text">
-        Quick Start
+        {t("Quick Start")}
       </h2>
       <button
         onclick={onClose}
         class="p-2 text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
-        aria-label="Close"
+        aria-label={t("Close")}
         data-testid="quick-start-close"
       >
         <X class="w-5 h-5" />
@@ -61,37 +62,44 @@
       <!-- Import -->
       <section>
         <h3 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-3">
-          Import Your Outline
+          {t("Import Your Outline")}
         </h3>
         <p class="font-prose text-press-body text-press-text mb-3 max-w-press-measure">
-          Kindling works with your existing outline. Import from the Start Screen or File → Import.
+          {t(
+            "Kindling works with your existing outline. Import from the Start Screen or File → Import."
+          )}
         </p>
         <ul class="space-y-2 text-press-ui text-press-muted">
           <li class="flex items-start gap-2">
             <Kanban class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
-            <span><strong class="text-press-text">Plottr</strong> — .pltr files</span>
+            <span><strong class="text-press-text">Plottr</strong> — {t(".pltr files")}</span>
           </li>
           <li class="flex items-start gap-2">
             <PenTool class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
-            <span><strong class="text-press-text">yWriter 7</strong> — .yw7 files</span>
+            <span><strong class="text-press-text">yWriter 7</strong> — {t(".yw7 files")}</span>
           </li>
           <li class="flex items-start gap-2">
             <FileText class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Markdown</strong> — Single .md file with # Chapter, ##
-              Scene, - Beat structure</span
+              ><strong class="text-press-text">Markdown</strong> — {t(
+                "Single .md file with # Chapter, ## Scene, - Beat structure"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <BookOpen class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Longform</strong> — Obsidian vault or index file</span
+              ><strong class="text-press-text">Longform</strong> — {t(
+                "Obsidian vault or index file"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <FileText class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Scrivener 3</strong> — .scriv project bundles</span
+              ><strong class="text-press-text">Scrivener 3</strong> — {t(
+                ".scriv project bundles"
+              )}</span
             >
           </li>
         </ul>
@@ -100,24 +108,28 @@
       <!-- Sidebar -->
       <section>
         <h3 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-3">
-          Sidebar — Chapters & Scenes
+          {t("Sidebar — Chapters & Scenes")}
         </h3>
         <p class="font-prose text-press-body text-press-text mb-3 max-w-press-measure">
-          The left sidebar shows your project structure. Click a chapter to expand or collapse its
-          scenes. Click a scene to load it in the editor.
+          {t(
+            "The left sidebar shows your project structure. Click a chapter to expand or collapse its scenes. Click a scene to load it in the editor."
+          )}
         </p>
         <ul class="space-y-2 text-press-ui text-press-muted">
           <li class="flex items-start gap-2">
             <ChevronDown class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
-            <span>Chapters group related scenes together</span>
+            <span>{t("Chapters group related scenes together")}</span>
           </li>
           <li class="flex items-start gap-2">
             <FileText class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
-            <span>Scenes are your primary writing units — each has a synopsis and beats</span>
+            <span>{t("Scenes are your primary writing units — each has a synopsis and beats")}</span
+            >
           </li>
           <li class="flex items-start gap-2">
             <span class="text-press-accent-text shrink-0">•</span>
-            <span>Right-click chapters or scenes for more options (reorder, archive, lock)</span>
+            <span
+              >{t("Right-click chapters or scenes for more options (reorder, archive, lock)")}</span
+            >
           </li>
         </ul>
       </section>
@@ -125,36 +137,40 @@
       <!-- Scene Panel -->
       <section>
         <h3 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-3">
-          Scene Panel — Synopsis & Beats
+          {t("Scene Panel — Synopsis & Beats")}
         </h3>
         <p class="font-prose text-press-body text-press-text mb-3 max-w-press-measure">
-          When you select a scene, the main area shows its synopsis and beats. Beats are the key
-          story moments — expand each to write prose.
+          {t(
+            "When you select a scene, the main area shows its synopsis and beats. Beats are the key story moments — expand each to write prose."
+          )}
         </p>
         <ul class="space-y-2 text-press-ui text-press-muted">
           <li class="flex items-start gap-2">
             <Zap class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Synopsis</strong> — Brief overview of the scene (from your
-              outline)</span
+              ><strong class="text-press-text">{t("Synopsis")}</strong> — {t(
+                "Brief overview of the scene (from your outline)"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <Zap class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Beats</strong> — Key moments; click to expand and write
-              prose</span
+              ><strong class="text-press-text">{t("Beats")}</strong> — {t(
+                "Key moments; click to expand and write prose"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <span class="text-press-accent-text shrink-0">•</span>
-            <span>Right-click beats to split, merge, or delete. Drag to reorder.</span>
+            <span>{t("Right-click beats to split, merge, or delete. Drag to reorder.")}</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="text-press-accent-text shrink-0">•</span>
             <span
-              ><strong class="text-press-text">Discovery Notes</strong> (⌘D) — Capture ideas as you write;
-              promote to beats when ready</span
+              ><strong class="text-press-text">{t("Discovery Notes")}</strong> (⌘D) — {t(
+                "Capture ideas as you write; promote to beats when ready"
+              )}</span
             >
           </li>
         </ul>
@@ -163,28 +179,35 @@
       <!-- References -->
       <section>
         <h3 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-3">
-          References Panel
+          {t("References Panel")}
         </h3>
         <p class="font-prose text-press-body text-press-text mb-3 max-w-press-measure">
-          The right panel shows characters and locations linked to the current scene. Use it to keep
-          track of who appears where.
+          {t(
+            "The right panel shows characters and locations linked to the current scene. Use it to keep track of who appears where."
+          )}
         </p>
         <ul class="space-y-2 text-press-ui text-press-muted">
           <li class="flex items-start gap-2">
             <User class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Characters</strong> — Who appears in this scene</span
+              ><strong class="text-press-text">{t("Characters")}</strong> — {t(
+                "Who appears in this scene"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <MapPin class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
             <span
-              ><strong class="text-press-text">Locations</strong> — Where the scene takes place</span
+              ><strong class="text-press-text">{t("Locations")}</strong> — {t(
+                "Where the scene takes place"
+              )}</span
             >
           </li>
           <li class="flex items-start gap-2">
             <Users class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
-            <span>Link characters and locations from your outline, or add them in Kindling</span>
+            <span
+              >{t("Link characters and locations from your outline, or add them in Kindling")}</span
+            >
           </li>
         </ul>
       </section>
@@ -192,16 +215,19 @@
       <!-- Tips -->
       <section>
         <h3 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-3">
-          Tips
+          {t("Tips")}
         </h3>
         <ul class="space-y-2 text-press-ui text-press-muted">
-          <li><strong class="text-press-text">⌘E</strong> — Export your project</li>
+          <li><strong class="text-press-text">⌘E</strong> — {t("Export your project")}</li>
           <li>
-            <strong class="text-press-text">⌘D</strong> — Toggle Discovery Notes in the scene panel
+            <strong class="text-press-text">⌘D</strong> — {t(
+              "Toggle Discovery Notes in the scene panel"
+            )}
           </li>
           <li>
-            <strong class="text-press-text">Snapshots</strong> — Create version checkpoints before big
-            changes (sidebar)
+            <strong class="text-press-text">{t("Snapshots")}</strong> — {t(
+              "Create version checkpoints before big changes (sidebar)"
+            )}
           </li>
         </ul>
       </section>
@@ -212,7 +238,7 @@
         onclick={onClose}
         class="w-full py-2 px-4 bg-press-accent hover:bg-press-accent-text text-press-on-accent font-medium rounded-lg transition-colors"
       >
-        Got it
+        {t("Got it")}
       </button>
     </div>
   </div>

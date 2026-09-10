@@ -15,6 +15,7 @@ import {
 import type { SceneReview } from "../utils/revisions";
 import EditorialWorkspace from "./EditorialWorkspace.svelte";
 import EditorialManuscript from "./EditorialManuscript.svelte";
+import { ui } from "../stores/ui.svelte";
 
 vi.mock("@tauri-apps/api/event", () => ({ listen: vi.fn().mockResolvedValue(() => {}) }));
 
@@ -1243,7 +1244,7 @@ describe("editorial workspace", () => {
     expect(times.map((e) => e.getAttribute("datetime"))).toEqual(dates);
     expect(times.map((e) => e.textContent)).toEqual(
       dates.map((date) =>
-        new Date(date).toLocaleString(undefined, {
+        new Date(date).toLocaleString(ui.locale, {
           month: "short",
           day: "numeric",
           year: "numeric",

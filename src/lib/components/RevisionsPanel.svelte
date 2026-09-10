@@ -13,6 +13,8 @@
     type ReviewDraft,
     type RevisionOverview,
   } from "../utils/revisions";
+  import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
   let {
     sceneId,
     projectId,
@@ -54,7 +56,7 @@
   );
   const hasChanges = $derived(comparison.some((part) => part.kind !== "same"));
   function dateLabel(value: string) {
-    return new Date(value).toLocaleString(undefined, {
+    return new Date(value).toLocaleString(ui.locale, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -115,7 +117,7 @@
     if (!review || restoreIndex === null) return;
     const next = review.data.drafts[restoreIndex];
     const data = window.structuredClone(review.data);
-    data.drafts.push(draftOf(review, "Before restoring " + next.name));
+    data.drafts.push(draftOf(review, t("Before restoring {name}", { name: next.name })));
     if (await save(data, next)) restoreIndex = null;
   }
   async function setStatus(status: string) {
@@ -135,44 +137,52 @@
   <header class="history-header">
     <div>
       <span class="eyebrow">{title}</span>
-      <h2 id="revisions-title">Draft history</h2>
+      <h2 id="revisions-title">{t("Draft history")}</h2>
     </div>
     <div class="header-actions">
       {#if review}<fieldset disabled={busy || locked}>
           <label class="status-label"
-            >Revision status<span class="compact-select"
+            >{t("Revision status")}<span class="compact-select"
               ><select value={review.data.status} onchange={(e) => setStatus(e.currentTarget.value)}
                 >{#each Object.entries(revisionStatuses) as [value, label]}<option {value}
-                    >{label}</option
+                    >{t(label)}</option
                   >{/each}</select
               ><ChevronDown size={14} /></span
             ></label
           >
         </fieldset>{/if}
-      <button type="button" disabled={busy} onclick={onClose}>Close</button>
+      <button type="button" disabled={busy} onclick={onClose}>{t("Close")}</button>
     </div>
   </header>
-  <nav aria-label="Revision views" class="history-tabs">
-    <button aria-pressed={tab === "history"} onclick={() => (tab = "history")}>Draft history</button
+  <nav aria-label={t("Revision views")} class="history-tabs">
+    <button aria-pressed={tab === "history"} onclick={() => (tab = "history")}
+      >{t("Draft history")}</button
     >
-    <button aria-pressed={tab === "overview"} onclick={() => (tab = "overview")}>All scenes</button>
+    <button aria-pressed={tab === "overview"} onclick={() => (tab = "overview")}
+      >{t("All scenes")}</button
+    >
   </nav>
   {#if error}<p role="alert" class="history-error">{error}</p>{/if}
   {#if !review}
     <div class="history-empty">
-      <p>{busy ? "Loading revisions…" : "Could not load revisions."}</p>
-      {#if !busy}<button onclick={load}>Retry</button>{/if}
+      <p>{t(busy ? "Loading revisions…" : "Could not load revisions.")}</p>
+      {#if !busy}<button onclick={load}>{t("Retry")}</button>{/if}
     </div>
   {:else}
-    {#if locked}<p class="locked-notice">This scene is locked. History is read-only.</p>{/if}
+    {#if locked}<p class="locked-notice">{t("This scene is locked. History is read-only.")}</p>{/if}
     {#if tab === "history"}
       <div class="history-layout">
-        <aside class="draft-list" aria-label="Saved drafts">
-          <h3>Saved drafts <span>{review.data.drafts.length}</span></h3>
+        <aside class="draft-list" aria-label={t("Saved drafts")}>
+          <h3>{t("Saved drafts")} <span>{review.data.drafts.length}</span></h3>
           <fieldset disabled={busy || locked} class="save-draft">
-            <label>Draft name<input bind:value={name} placeholder="Post-editor pass" /></label>
+            <label
+              >{t("Draft name")}<input
+                bind:value={name}
+                placeholder={t("Post-editor pass")}
+              /></label
+            >
             <button disabled={!name.trim()} onclick={createDraft}
-              ><Plus size={14} />Save named draft</button
+              ><Plus size={14} />{t("Save named draft")}</button
             >
           </fieldset>
           <div class="draft-entries">
@@ -184,62 +194,70 @@
                   before = item.index;
                   restoreIndex = null;
                 }}
-                ><span class="draft-number">Draft {item.index + 1}</span><strong
-                  >{item.draft.name}</strong
-                ><time datetime={item.draft.created_at}>{dateLabel(item.draft.created_at)}</time
+                ><span class="draft-number">{t("Draft {number}", { number: item.index + 1 })}</span
+                ><strong>{item.draft.name}</strong><time datetime={item.draft.created_at}
+                  >{dateLabel(item.draft.created_at)}</time
                 ></button
               >
             {/each}
           </div>
         </aside>
-        <section class="draft-detail" aria-label="Draft comparison">
+        <section class="draft-detail" aria-label={t("Draft comparison")}>
           {#if !review.data.drafts.length}
             <div class="history-empty">
               <History size={28} />
-              <h3>Keep a version of this scene</h3>
-              <p>No saved drafts yet. Save a named draft to keep this scene’s current prose.</p>
+              <h3>{t("Keep a version of this scene")}</h3>
+              <p>
+                {t("No saved drafts yet. Save a named draft to keep this scene’s current prose.")}
+              </p>
             </div>
           {:else if oldDraft && newDraft}
             <div class="comparison-toolbar">
               <label
-                >Compare with<span class="compact-select"
-                  ><select aria-label="Compare with" bind:value={after}
-                    ><option value={-1}>Current prose</option
+                >{t("Compare with")}<span class="compact-select"
+                  ><select aria-label={t("Compare with")} bind:value={after}
+                    ><option value={-1}>{t("Current prose")}</option
                     >{#each review.data.drafts as d, i}<option value={i}
-                        >Draft {i + 1} · {d.name}</option
+                        >{t("Draft {number}", { number: i + 1 })} · {d.name}</option
                       >{/each}</select
                   ><ChevronDown size={14} /></span
                 ></label
               >
               <button disabled={busy || locked} onclick={() => (restoreIndex = before)}
-                ><RotateCcw size={14} />Restore selected draft</button
+                ><RotateCcw size={14} />{t("Restore selected draft")}</button
               >
             </div>
             {#if restoreIndex !== null}
-              <div class="restore-confirm" role="region" aria-label="Confirm draft restore">
+              <div class="restore-confirm" role="region" aria-label={t("Confirm draft restore")}>
                 <p>
-                  Restore “{review.data.drafts[restoreIndex].name}”? Current prose will be preserved
-                  as another draft. Beat structure must still match.
+                  {t(
+                    "Restore “{name}”? Current prose will be preserved as another draft. Beat structure must still match.",
+                    { name: review.data.drafts[restoreIndex].name }
+                  )}
                 </p>
                 <div class="restore-actions">
                   <button disabled={busy || locked} onclick={restore}
-                    >Restore and preserve current prose</button
+                    >{t("Restore and preserve current prose")}</button
                   ><button disabled={busy} onclick={() => (restoreIndex = null)}
-                    >Cancel restore</button
+                    >{t("Cancel restore")}</button
                   >
                 </div>
               </div>
             {/if}
             <p class="comparison-note">
-              {hasChanges
-                ? "Removed text is marked on the left; added text is marked on the right."
-                : "No prose text changes between these versions."} Formatting is not compared.
+              {t(
+                hasChanges
+                  ? "Removed text is marked on the left; added text is marked on the right. Formatting is not compared."
+                  : "No prose text changes between these versions. Formatting is not compared."
+              )}
             </p>
             <div class="comparison-pages">
-              <section class="comparison-version" aria-label="Saved draft">
+              <section class="comparison-version" aria-label={t("Saved draft")}>
                 <header>
                   <span class="version-kind"
-                    >Saved draft · {oldDraft.mode === "page" ? "Page prose" : "Beat prose"}</span
+                    >{t("Saved draft")} · {t(
+                      oldDraft.mode === "page" ? "Page prose" : "Beat prose"
+                    )}</span
                   >
                   <h3>{oldDraft.name}</h3>
                   <time datetime={oldDraft.created_at}>{dateLabel(oldDraft.created_at)}</time>
@@ -249,14 +267,14 @@
                       >{:else if part.kind !== "insert"}{part.text}{/if}{/each}
                 </div>
               </section>
-              <section class="comparison-version" aria-label="Comparison version">
+              <section class="comparison-version" aria-label={t("Comparison version")}>
                 <header>
                   <span class="version-kind"
-                    >{after < 0 ? "Working manuscript" : "Saved draft"} · {newDraft.mode === "page"
-                      ? "Page prose"
-                      : "Beat prose"}</span
+                    >{t(after < 0 ? "Working manuscript" : "Saved draft")} · {t(
+                      newDraft.mode === "page" ? "Page prose" : "Beat prose"
+                    )}</span
                   >
-                  <h3>{after < 0 ? "Current prose" : review.data.drafts[after].name}</h3>
+                  <h3>{after < 0 ? t("Current prose") : review.data.drafts[after].name}</h3>
                   {#if after >= 0}<time datetime={review.data.drafts[after].created_at}
                       >{dateLabel(review.data.drafts[after].created_at)}</time
                     >{/if}
@@ -274,12 +292,15 @@
       <div class="overview-scroll">
         <table>
           <thead
-            ><tr><th>Chapter</th><th>Scene</th><th>Revision status</th><th>Saved drafts</th></tr
+            ><tr
+              ><th>{t("Chapter")}</th><th>{t("Scene")}</th><th>{t("Revision status")}</th><th
+                >{t("Saved drafts")}</th
+              ></tr
             ></thead
           ><tbody
             >{#each overview as row}<tr
                 ><td>{row.chapter}</td><td>{row.title}</td><td
-                  >{revisionStatuses[row.status as keyof typeof revisionStatuses]}</td
+                  >{t(revisionStatuses[row.status as keyof typeof revisionStatuses])}</td
                 ><td>{row.drafts}</td></tr
               >{/each}</tbody
           >
@@ -287,7 +308,7 @@
       </div>
     {/if}
   {/if}
-  {#if busy}<p role="status" class="busy-notice">Saving or loading…</p>{/if}
+  {#if busy}<p role="status" class="busy-notice">{t("Saving or loading…")}</p>{/if}
 </dialog>
 
 <style>

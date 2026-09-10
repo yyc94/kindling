@@ -2,6 +2,7 @@
   import { Link2, X } from "lucide-svelte";
   import type { ReferenceSuggestion } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     suggestion,
@@ -42,10 +43,10 @@
         {suggestion.reference_name}
       </span>
       <span class="text-press-eyebrow px-1.5 py-0.5 rounded-full bg-press-sunken text-press-muted">
-        {typeLabel}
+        {t(typeLabel)}
       </span>
       <span class="text-press-eyebrow {confidenceColor}">
-        {confidenceLabel}
+        {t(confidenceLabel)}
       </span>
     </div>
     <p class="text-press-eyebrow text-press-muted mt-0.5 truncate">
@@ -53,20 +54,20 @@
     </p>
   </div>
   <div class="flex items-center gap-1 shrink-0">
-    <Tooltip text="Link to scene" position="left">
+    <Tooltip text={t("Link to scene")} position="left">
       <button
         onclick={() => onLink(suggestion)}
         class="p-1 rounded hover:bg-press-accent-wash text-press-accent-text transition-colors cursor-pointer"
-        aria-label="Link {suggestion.reference_name} to scene"
+        aria-label={t("Link {name} to scene", { name: suggestion.reference_name })}
       >
         <Link2 class="w-3.5 h-3.5" />
       </button>
     </Tooltip>
-    <Tooltip text="Dismiss" position="left">
+    <Tooltip text={t("Dismiss")} position="left">
       <button
         onclick={() => onDismiss(suggestion)}
         class="p-1 rounded hover:bg-press-error-wash text-press-muted hover:text-press-error transition-colors cursor-pointer"
-        aria-label="Dismiss suggestion for {suggestion.reference_name}"
+        aria-label={t("Dismiss suggestion for {name}", { name: suggestion.reference_name })}
       >
         <X class="w-3.5 h-3.5" />
       </button>

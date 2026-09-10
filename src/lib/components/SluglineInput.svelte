@@ -7,6 +7,7 @@
    */
   import { ChevronDown } from "lucide-svelte";
   import type { Location } from "../types";
+  import { t } from "../i18n.svelte";
 
   const TIME_OPTIONS = [
     "DAY",
@@ -134,6 +135,7 @@
       type="button"
       onclick={() => setPrefix("INT")}
       {disabled}
+      title={t("Interior")}
       class="px-3 py-2 text-press-ui font-medium transition-colors {prefix === 'INT'
         ? 'bg-press-accent text-press-on-accent'
         : 'bg-press-sunken text-press-muted hover:text-press-text'}"
@@ -144,6 +146,7 @@
       type="button"
       onclick={() => setPrefix("EXT")}
       {disabled}
+      title={t("Exterior")}
       class="px-3 py-2 text-press-ui font-medium transition-colors border-l border-press-border {prefix ===
       'EXT'
         ? 'bg-press-accent text-press-on-accent'
@@ -159,7 +162,7 @@
     onblur={handleLocationBlur}
     type="text"
     list="slugline-locations"
-    placeholder="LOCATION"
+    placeholder={t("LOCATION")}
     {disabled}
     class="flex-1 min-w-[120px] bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent uppercase placeholder:normal-case placeholder:text-press-muted"
   />
@@ -177,6 +180,7 @@
         showTimeDropdown = !showTimeDropdown;
       }}
       {disabled}
+      aria-label={t("Time of day")}
       aria-expanded={showTimeDropdown}
       aria-haspopup="listbox"
       class="flex items-center gap-1.5 px-3 py-2 text-press-ui bg-press-sunken text-press-text border border-press-border rounded-lg hover:border-press-accent transition-colors"
@@ -192,16 +196,16 @@
         class="absolute left-0 top-full mt-1 z-press-dropdown bg-press-surface border border-press-border rounded-lg shadow-press-overlay py-1 max-h-48 overflow-y-auto"
         onclick={(e) => e.stopPropagation()}
       >
-        {#each TIME_OPTIONS as t}
+        {#each TIME_OPTIONS as option}
           <button
             type="button"
-            onclick={() => setTime(t)}
+            onclick={() => setTime(option)}
             class="w-full text-left px-3 py-2 text-press-ui text-press-text hover:bg-press-sunken transition-colors {timeOfDay ===
-            t
+            option
               ? 'bg-press-accent-wash text-press-accent-text'
               : ''}"
           >
-            {t}
+            {t(option)}
           </button>
         {/each}
       </div>

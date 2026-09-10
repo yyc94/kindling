@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from "../i18n.svelte";
+
   interface Props {
     title: string;
     titleId?: string;
@@ -15,8 +17,8 @@
     titleId = "dialog-title",
     embedded = false,
     message,
-    confirmLabel = "Delete",
-    cancelLabel = "Cancel",
+    confirmLabel = t("Delete"),
+    cancelLabel = t("Cancel"),
     onConfirm,
     onCancel,
   }: Props = $props();

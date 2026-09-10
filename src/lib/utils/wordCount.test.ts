@@ -10,4 +10,5 @@ it.each([
   ["hel<strong>lo</strong>&nbsp;world", 2],
   ["one<br/>two<hr>three", 3],
   ["<p>one</p><!-- ignored --><p>two &amp; three</p>", 4],
+  ["<p>你好世界</p>", 4],
 ])("counts visible words in %s", (html, count) => expect(countWordsInHtml(html)).toBe(count));

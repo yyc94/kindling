@@ -128,10 +128,10 @@ pub struct PageCountEstimate {
 }
 
 fn count_words_in_html(html: &str) -> usize {
-    let text = strip_html_simple(html);
-    text.split_whitespace().count()
+    db::writing::count_words(html) as usize
 }
 
+#[cfg(test)]
 fn strip_html_simple(html: &str) -> String {
     let mut result = String::new();
     let mut in_tag = false;

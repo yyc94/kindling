@@ -3,6 +3,7 @@
   import { tick } from "svelte";
   import { X } from "lucide-svelte";
   import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     disabled = false,
@@ -35,7 +36,7 @@
       await installAndRelaunch(state);
     } catch (error) {
       failed = true;
-      ui.showError(`Could not restart to update: ${String(error)}`);
+      ui.showError(t("Could not restart to update: {error}", { error: String(error) }));
     } finally {
       restarting = false;
       await tick();
@@ -49,7 +50,7 @@
     class="fixed left-0 right-0 top-0 z-press-toast flex items-center justify-between gap-4 border-b border-press-border bg-press-accent px-4 py-2 text-press-ui text-press-on-accent"
   >
     <span>
-      Kindling v{state.version} is ready — Restart to update
+      {t("Kindling v{version} is ready — Restart to update", { version: state.version })}
     </span>
     <div class="flex items-center gap-2">
       <button
@@ -58,13 +59,13 @@
         disabled={disabled || restarting}
         class="rounded px-3 py-1 font-medium border border-press-on-accent hover:bg-press-accent-text transition-colors disabled:bg-press-disabled-bg disabled:text-press-disabled-text disabled:border-press-disabled-border"
       >
-        Restart
+        {t("Restart")}
       </button>
       <button
         onclick={dismissUpdate}
         disabled={disabled || restarting}
         class="p-1 rounded hover:bg-press-accent-text transition-colors disabled:bg-press-disabled-bg disabled:text-press-disabled-text"
-        aria-label="Dismiss"
+        aria-label={t("Dismiss")}
       >
         <X class="w-4 h-4" />
       </button>

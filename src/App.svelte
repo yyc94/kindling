@@ -36,6 +36,7 @@
   import { synopsisSaves, type SynopsisDraft } from "./lib/stores/synopsisSaves.svelte";
   import { proseSaves, type ProseSave } from "./lib/utils/proseSaves";
   import { ui } from "./lib/stores/ui.svelte";
+  import { t } from "./lib/i18n.svelte";
   import type { ProseDocument } from "./lib/utils/proseSearch";
   import type { Project, ExportResult, Chapter, Scene, Beat } from "./lib/types";
 
@@ -67,7 +68,7 @@
     const chapter = chapters.find((chapter) => chapter.id === doc.chapter_id);
     const scenes = await invoke<Scene[]>("get_scenes", { chapterId: doc.chapter_id });
     const scene = scenes.find((scene) => scene.id === doc.scene_id);
-    if (!chapter || !scene) throw new Error("This scene is no longer available.");
+    if (!chapter || !scene) throw new Error(t("This scene is no longer available."));
     const beats = await invoke<Beat[]>("get_beats", { sceneId: scene.id });
     if (currentProject.value?.id !== projectId) return;
     currentProject.setChapters(chapters);
@@ -132,6 +133,10 @@
     if (!currentProject.value) {
       loadRecentProjects();
     }
+  });
+
+  $effect(() => {
+    void invoke("set_menu_locale", { locale: ui.locale });
   });
 
   async function handleImport(type: ImportType) {
@@ -230,7 +235,7 @@
     await proseSaves.flush();
     if (proseSaves.draftsForRecovery().length) {
       throw new Error(
-        "Prose changes could not be saved. Review the unsaved drafts in Find and Replace."
+        t("Prose changes could not be saved. Review the unsaved drafts in Find and Replace.")
       );
     }
   }
@@ -289,7 +294,7 @@
       await exit(0);
     } catch (error) {
       discardQuitDrafts = null;
-      ui.showError(`Could not quit: ${String(error)}`);
+      ui.showError(t("Could not quit: {error}", { error: String(error) }));
     } finally {
       closePending = false;
     }
@@ -590,17 +595,23 @@
       embedded
       titleId="quit-confirmation-title"
       title={editorialQuitFailed
-        ? "Quit without saving review changes?"
+        ? t("Quit without saving review changes?")
         : discardQuitProse.length
-          ? "Quit without saving writing changes?"
-          : "Quit without saving synopsis changes?"}
+          ? t("Quit without saving writing changes?")
+          : t("Quit without saving synopsis changes?")}
       message={editorialQuitFailed
-        ? "Your review could not be saved. Keep editing to retry or export a recovery copy. Quitting and discarding removes all unsaved review, prose, and synopsis changes."
+        ? t(
+            "Your review could not be saved. Keep editing to retry or export a recovery copy. Quitting and discarding removes all unsaved review, prose, and synopsis changes."
+          )
         : discardQuitProse.length
-          ? "Some prose or synopsis changes could not be saved. Quit and discard these unsaved writing changes, or keep editing to retry saving."
-          : "Some synopsis changes could not be saved. Quit and discard these unsaved synopsis changes, or keep editing to retry saving."}
-      confirmLabel="Quit and discard"
-      cancelLabel="Keep editing"
+          ? t(
+              "Some prose or synopsis changes could not be saved. Quit and discard these unsaved writing changes, or keep editing to retry saving."
+            )
+          : t(
+              "Some synopsis changes could not be saved. Quit and discard these unsaved synopsis changes, or keep editing to retry saving."
+            )}
+      confirmLabel={t("Quit and discard")}
+      cancelLabel={t("Keep editing")}
       onConfirm={quitAndDiscard}
       onCancel={() => {
         if (!closePending) discardQuitDrafts = null;
@@ -615,13 +626,13 @@
     role="alert"
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-press-toast rounded-lg bg-press-surface border border-press-error p-4 shadow-lg text-press-ui"
   >
-    <p class="text-press-error">Your synopsis changes have not been saved.</p>
+    <p class="text-press-error">{t("Your synopsis changes have not been saved.")}</p>
     <button
       onclick={retrySynopses}
       disabled={retryingSynopses || interactionBlocked}
-      aria-label="Retry all synopsis saves"
+      aria-label={t("Retry all synopsis saves")}
       class="mt-2 underline text-press-text disabled:opacity-50"
-      >{retryingSynopses ? "Saving..." : "Retry saving"}</button
+      >{t(retryingSynopses ? "Saving..." : "Retry saving")}</button
     >
   </div>
 {/if}

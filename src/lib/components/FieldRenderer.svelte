@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ExternalLink } from "lucide-svelte";
   import type { FieldDefinition } from "../types";
+  import { t } from "../i18n.svelte";
 
   let {
     definition,
@@ -129,7 +130,7 @@
           target="_blank"
           rel="noopener noreferrer"
           class="text-press-accent-text hover:text-press-accent-text p-2"
-          aria-label="Open URL"
+          aria-label={t("Open URL")}
         >
           <ExternalLink class="w-4 h-4" />
         </a>

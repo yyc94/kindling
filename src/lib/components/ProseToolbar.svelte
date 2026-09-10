@@ -15,6 +15,7 @@
     Undo2,
     Redo2,
   } from "lucide-svelte";
+  import { t } from "../i18n.svelte";
   let {
     editor,
     revision = 0,
@@ -42,34 +43,34 @@
   });
 </script>
 
-<div class="prose-toolbar" role="toolbar" aria-label="Text formatting">
+<div class="prose-toolbar" role="toolbar" aria-label={t("Text formatting")}>
   {#if !readonly}
     <div class="group">
       <button
-        title="Bold (Ctrl+B)"
-        aria-label="Bold"
+        title={t("Bold (Ctrl+B)")}
+        aria-label={t("Bold")}
         aria-pressed={!!active.bold}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().toggleBold().run()}><Bold size={16} /></button
       >
       <button
-        title="Italic (Ctrl+I)"
-        aria-label="Italic"
+        title={t("Italic (Ctrl+I)")}
+        aria-label={t("Italic")}
         aria-pressed={!!active.italic}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().toggleItalic().run()}><Italic size={16} /></button
       >
       <button
-        title="Underline (Ctrl+U)"
-        aria-label="Underline"
+        title={t("Underline (Ctrl+U)")}
+        aria-label={t("Underline")}
         aria-pressed={!!active.underline}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().toggleUnderline().run()}
         ><Underline size={16} /></button
       >
       <button
-        title="Monospace"
-        aria-label="Monospace"
+        title={t("Monospace")}
+        aria-label={t("Monospace")}
         aria-pressed={!!active.code}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().toggleCode().run()}><Code size={16} /></button
@@ -78,8 +79,8 @@
     <div class="group separated">
       {#each [{ id: "left", icon: AlignLeft }, { id: "center", icon: AlignCenter }, { id: "right", icon: AlignRight }, { id: "justify", icon: AlignJustify }] as alignment}
         <button
-          title={`Align ${alignment.id}`}
-          aria-label={`Align ${alignment.id}`}
+          title={t(`Align ${alignment.id}`)}
+          aria-label={t(`Align ${alignment.id}`)}
           aria-pressed={!!active[alignment.id as "left" | "center" | "right" | "justify"]}
           onmousedown={(e) => e.preventDefault()}
           onclick={() => editor?.chain().focus().setTextAlign(alignment.id).run()}
@@ -87,15 +88,15 @@
         >
       {/each}
       <button
-        title="Blockquote"
-        aria-label="Blockquote"
+        title={t("Blockquote")}
+        aria-label={t("Blockquote")}
         aria-pressed={!!active.blockquote}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().toggleBlockquote().run()}><Quote size={16} /></button
       >
       <button
-        title="Indent"
-        aria-label="Indent"
+        title={t("Indent")}
+        aria-label={t("Indent")}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().insertContent("\t").run()}
         ><IndentIncrease size={16} /></button
@@ -103,14 +104,14 @@
     </div>
     <div class="group separated">
       <button
-        title="Undo"
-        aria-label="Undo"
+        title={t("Undo")}
+        aria-label={t("Undo")}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().undo().run()}><Undo2 size={16} /></button
       >
       <button
-        title="Redo"
-        aria-label="Redo"
+        title={t("Redo")}
+        aria-label={t("Redo")}
         onmousedown={(e) => e.preventDefault()}
         onclick={() => editor?.chain().focus().redo().run()}><Redo2 size={16} /></button
       >

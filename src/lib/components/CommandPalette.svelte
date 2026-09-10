@@ -7,6 +7,7 @@
 <script lang="ts">
   import { Command, Search } from "lucide-svelte";
   import { fuzzyMatch, fuzzyScore, type CommandDef } from "../commands";
+  import { t } from "../i18n.svelte";
 
   interface CommandWithAction extends CommandDef {
     action: () => void;
@@ -31,12 +32,14 @@
     if (!q) return commands;
     return commands
       .filter((c) => {
-        const searchText = [c.label, c.keywords?.join(" ") ?? ""].join(" ").toLowerCase();
+        const searchText = [t(c.label), c.label, c.keywords?.join(" ") ?? ""]
+          .join(" ")
+          .toLowerCase();
         return fuzzyMatch(q, searchText);
       })
       .sort((a, b) => {
-        const scoreA = fuzzyScore(q, a.label + " " + (a.keywords?.join(" ") ?? ""));
-        const scoreB = fuzzyScore(q, b.label + " " + (b.keywords?.join(" ") ?? ""));
+        const scoreA = fuzzyScore(q, t(a.label) + " " + (a.keywords?.join(" ") ?? ""));
+        const scoreB = fuzzyScore(q, t(b.label) + " " + (b.keywords?.join(" ") ?? ""));
         return scoreB - scoreA;
       });
   });
@@ -61,6 +64,7 @@
 
   function handleKeydown(e: KeyboardEvent) {
     if (!open) return;
+    if (e.isComposing) return;
 
     if (e.key === "Escape") {
       e.preventDefault();
@@ -121,7 +125,7 @@
     class="fixed left-1/2 top-[20%] z-press-command w-[min(32rem,90vw)] -translate-x-1/2 rounded-xl border border-press-border bg-press-surface shadow-press-overlay"
     role="dialog"
     aria-modal="true"
-    aria-label="Command palette"
+    aria-label={t("Command palette")}
     data-testid="command-palette"
   >
     <!-- Search input -->
@@ -130,7 +134,7 @@
       <!-- svelte-ignore a11y_autofocus -->
       <input
         type="text"
-        placeholder="Type a command or search..."
+        placeholder={t("Type a command or search...")}
         bind:value={query}
         class="flex-1 bg-transparent text-press-text placeholder:text-press-muted focus:outline-none"
         autofocus
@@ -144,7 +148,9 @@
     <!-- Command list -->
     <div class="max-h-80 overflow-y-auto py-2">
       {#if filteredCommands.length === 0}
-        <p class="px-4 py-8 text-center text-press-ui text-press-muted">No matching commands</p>
+        <p class="px-4 py-8 text-center text-press-ui text-press-muted">
+          {t("No matching commands")}
+        </p>
       {:else}
         {#each filteredCommands as cmd, i}
           <button
@@ -158,7 +164,7 @@
           >
             <div class="flex items-center gap-3 min-w-0">
               <Command class="w-4 h-4 shrink-0 text-press-muted" />
-              <span class="truncate text-press-text">{cmd.label}</span>
+              <span class="truncate text-press-text">{t(cmd.label)}</span>
             </div>
             <kbd
               class="shrink-0 rounded border border-press-border px-2 py-0.5 text-press-eyebrow text-press-muted"
@@ -171,7 +177,7 @@
     </div>
 
     <p class="border-t border-press-border px-4 py-2 text-press-eyebrow text-press-muted">
-      ↑↓ to navigate · Enter to run · Esc to close
+      {t("↑↓ to navigate · Enter to run · Esc to close")}
     </p>
   </div>
 {/if}

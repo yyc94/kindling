@@ -3,6 +3,8 @@
   import { currentProject } from "../stores/project.svelte";
   import { writing } from "../stores/writing.svelte";
   import { proseSaves } from "../utils/proseSaves";
+  import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
 
   let { prepareReset }: { prepareReset?: () => Promise<void> } = $props();
   let resetting = $state(false);
@@ -33,7 +35,9 @@
       await writing.reset(projectId);
     } catch (error) {
       if (currentProject.value?.id === projectId)
-        resetError = `Save your pending prose before resetting: ${String(error)}`;
+        resetError = t("Save your pending prose before resetting: {error}", {
+          error: String(error),
+        });
     } finally {
       resetting = false;
     }
@@ -43,32 +47,36 @@
 {#if writing.value && writing.value.project_id === currentProject.value?.id}
   {@const stats = writing.value}
   <div class="mt-3 space-y-1 text-press-eyebrow text-press-muted" data-testid="writing-progress">
-    <p>{stats.project_words.toLocaleString()} project words</p>
-    <p title="Net words added through saved edits today. Deletions reduce this total.">
-      Today: {stats.today_words.toLocaleString()}{#if stats.daily_goal > 0}
-        / {stats.daily_goal.toLocaleString()} words{:else}
-        words · goal off{/if}
+    <p>{stats.project_words.toLocaleString(ui.locale)} {t("project words")}</p>
+    <p title={t("Net words added through saved edits today. Deletions reduce this total.")}>
+      {t("Today")}: {stats.today_words.toLocaleString(ui.locale)}{#if stats.daily_goal > 0}
+        / {stats.daily_goal.toLocaleString(ui.locale)} {t("words")}{:else}
+        {t("words · goal off")}{/if}
     </p>
     {#if stats.daily_goal > 0}
       <progress
         class="w-full"
-        aria-label="Daily writing goal"
+        aria-label={t("Daily writing goal")}
         max={stats.daily_goal}
         value={Math.max(0, stats.today_words)}
       ></progress>
     {/if}
     <div class="flex items-center justify-between gap-2">
-      <span title="Net words saved in this project since opening the app or resetting."
-        >Session: {stats.session_words.toLocaleString()} words</span
+      <span title={t("Net words saved in this project since opening the app or resetting.")}
+        >{t("Session")}: {stats.session_words.toLocaleString(ui.locale)} {t("words")}</span
       >
       <button
         class="text-press-muted hover:text-press-text"
         onclick={reset}
         disabled={resetting}
-        aria-label="Reset writing session">Reset</button
+        aria-label={t("Reset writing session")}>{t("Reset")}</button
       >
     </div>
-    <p>{stats.streak} day{stats.streak === 1 ? "" : "s"} writing streak</p>
+    <p>
+      {t(stats.streak === 1 ? "{count} day writing streak" : "{count} days writing streak", {
+        count: stats.streak,
+      })}
+    </p>
   </div>
 {/if}
 {#if resetError}

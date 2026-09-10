@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import { Plus, X } from "lucide-svelte";
   import type { Tag } from "../types";
+  import { t } from "../i18n.svelte";
 
   let {
     projectId,
@@ -70,6 +71,7 @@
   }
 
   function handleKeydown(e: KeyboardEvent) {
+    if (e.isComposing) return;
     if (e.key === "Escape") {
       showDropdown = false;
     } else if (e.key === "Enter" && search.trim() && availableTags.length === 0) {
@@ -106,7 +108,7 @@
       <button
         onclick={() => removeTag(tag.id)}
         class="hover:text-press-error"
-        aria-label="Remove tag {tag.name}"
+        aria-label={t("Remove tag {name}", { name: tag.name })}
       >
         <X class="w-3 h-3" />
       </button>
@@ -117,10 +119,10 @@
     <button
       onclick={() => (showDropdown = !showDropdown)}
       class="inline-flex items-center gap-0.5 text-press-eyebrow text-press-muted hover:text-press-text px-1.5 py-0.5 rounded border border-dashed border-press-border hover:border-press-accent"
-      aria-label="Add tag"
+      aria-label={t("Add tag")}
     >
       <Plus class="w-3 h-3" />
-      Tag
+      {t("Tag")}
     </button>
 
     {#if showDropdown}
@@ -132,7 +134,7 @@
             type="text"
             bind:value={search}
             onkeydown={handleKeydown}
-            placeholder="Search or create..."
+            placeholder={t("Search or create...")}
             class="w-full bg-press-sunken text-press-text text-press-eyebrow rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-press-focus"
           />
         </div>
@@ -158,11 +160,13 @@
               class="w-full text-left px-2 py-1.5 text-press-eyebrow text-press-accent-text hover:bg-press-sunken"
               disabled={creating}
             >
-              Create "{search.trim()}"
+              {t('Create "{name}"', { name: search.trim() })}
             </button>
           {/if}
           {#if !search.trim() && availableTags.length === 0}
-            <p class="px-2 py-1.5 text-press-eyebrow text-press-muted">No more tags available</p>
+            <p class="px-2 py-1.5 text-press-eyebrow text-press-muted">
+              {t("No more tags available")}
+            </p>
           {/if}
         </div>
       </div>

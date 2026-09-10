@@ -27,6 +27,8 @@
     PenTool,
   } from "lucide-svelte";
   import { currentProject } from "../stores/project.svelte";
+  import { ui } from "../stores/ui.svelte";
+  import { t } from "../i18n.svelte";
   import type {
     ExportResult,
     MarkdownExportOptions,
@@ -80,7 +82,7 @@
   let epubTitle = $state("");
   let epubAuthor = $state("");
   let epubDescription = $state("");
-  let epubLanguage = $state("en");
+  let epubLanguage = $state(ui.locale === "zh-CN" ? "zh" : "en");
   let includeCoverImage = $state(false);
   let coverImagePath = $state("");
   let treatmentLevel = $state<TreatmentLevel>("five_page");
@@ -209,9 +211,9 @@
   // Format word count for display (rounded to nearest 1000)
   const formattedWordCount = $derived.by(() => {
     if (wordCount === null) return null;
-    if (wordCount < 1000) return `${wordCount} words`;
+    if (wordCount < 1000) return `${wordCount.toLocaleString(ui.locale)} ${t("words")}`;
     const rounded = Math.round(wordCount / 1000) * 1000;
-    return `~${rounded.toLocaleString()} words`;
+    return `~${rounded.toLocaleString(ui.locale)} ${t("words")}`;
   });
 
   const canExport = $derived(
@@ -232,7 +234,7 @@
   async function selectDestination() {
     const path = await open({
       directory: true,
-      title: "Select Export Destination",
+      title: t("Select Export Destination"),
       defaultPath: outputPath || undefined,
     });
 
@@ -245,9 +247,9 @@
   async function selectDocxFile() {
     const defaultName = `${exportName.trim() || currentProject.value?.name || "Export"}.docx`;
     const path = await save({
-      title: "Save Word Document",
+      title: t("Save Word Document"),
       defaultPath: defaultName,
-      filters: [{ name: "Word Document", extensions: ["docx"] }],
+      filters: [{ name: t("Word Document"), extensions: ["docx"] }],
     });
 
     if (path) {
@@ -259,7 +261,7 @@
   async function selectEpubFile() {
     const defaultName = `${epubTitle.trim() || currentProject.value?.name || "Export"}.epub`;
     const path = await save({
-      title: "Save EPUB",
+      title: t("Save EPUB"),
       defaultPath: defaultName,
       filters: [{ name: "EPUB", extensions: ["epub"] }],
     });
@@ -272,8 +274,8 @@
 
   async function selectCoverImage() {
     const path = await open({
-      title: "Select Cover Image",
-      filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png", "gif", "webp"] }],
+      title: t("Select Cover Image"),
+      filters: [{ name: t("Images"), extensions: ["jpg", "jpeg", "png", "gif", "webp"] }],
     });
 
     if (path) {
@@ -284,10 +286,10 @@
 
   async function selectTreatmentFile() {
     const ext = treatmentFormat === "docx" ? "docx" : "txt";
-    const filterName = treatmentFormat === "docx" ? "Word Document" : "Text File";
+    const filterName = t(treatmentFormat === "docx" ? "Word Document" : "Text File");
     const defaultName = `${currentProject.value?.name || "Treatment"} - Treatment.${ext}`;
     const path = await save({
-      title: "Save Treatment",
+      title: t("Save Treatment"),
       defaultPath: defaultName,
       filters: [{ name: filterName, extensions: [ext] }],
     });
@@ -303,7 +305,7 @@
       const path = await open({
         directory: true,
         multiple: false,
-        title: "Choose an empty novelWriter destination folder",
+        title: t("Choose an empty novelWriter destination folder"),
       });
       if (path) {
         novelwriterPath = path;
@@ -317,9 +319,9 @@
   async function selectScrivenerPath() {
     if (scrivenerMode === "create_new") {
       const path = await save({
-        title: "Save Scrivener Project",
+        title: t("Save Scrivener Project"),
         defaultPath: `${currentProject.value?.name || "Export"}.scriv`,
-        filters: [{ name: "Scrivener Project", extensions: ["scriv"] }],
+        filters: [{ name: t("Scrivener Project"), extensions: ["scriv"] }],
       });
       if (path) {
         scrivenerPath = path;
@@ -328,7 +330,7 @@
     } else {
       const path = await open({
         directory: true,
-        title: "Select Existing .scriv Bundle",
+        title: t("Select Existing .scriv Bundle"),
         defaultPath: currentProject.value?.source_path || undefined,
       });
       if (path) {
@@ -358,7 +360,7 @@
       }
 
       if (!currentProject.value) {
-        throw new Error("No project selected");
+        throw new Error(t("No project selected"));
       }
 
       let result: ExportResult;
@@ -490,6 +492,7 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return;
     if (event.key === "Escape") {
       onClose();
     } else if (event.key === "Enter" && canExport && !exporting) {
@@ -530,9 +533,11 @@
         </div>
         <div>
           <h2 id="export-dialog-title" class="text-press-body-lg font-medium text-press-text">
-            Export {scopeTitle}
+            {t("Export {title}", { title: scopeTitle })}
           </h2>
-          <p class="text-press-eyebrow text-press-muted">Choose format and configure options</p>
+          <p class="text-press-eyebrow text-press-muted">
+            {t("Choose format and configure options")}
+          </p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -546,12 +551,12 @@
             {/if}
           </div>
         {/if}
-        <Tooltip text="Close" position="left">
+        <Tooltip text={t("Close")} position="left">
           <button
             type="button"
             onclick={onClose}
             class="p-2 text-press-muted hover:text-press-text hover:bg-press-sunken transition-colors rounded-lg"
-            aria-label="Close"
+            aria-label={t("Close")}
             data-testid="export-close"
           >
             <X class="w-5 h-5" />
@@ -564,7 +569,9 @@
     <div class="p-5 space-y-5 overflow-y-auto flex-1">
       <!-- Format Selection - Card Style -->
       <fieldset>
-        <legend class="block text-press-ui font-medium text-press-muted mb-3">Export Format</legend>
+        <legend class="block text-press-ui font-medium text-press-muted mb-3">
+          {t("Export Format")}
+        </legend>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {#if scope === "project" && currentProject.value?.project_type !== "screenplay"}
             <label
@@ -583,7 +590,7 @@
               />
               <BookOpen class="w-8 h-8 mb-2 text-press-muted" />
               <span class="text-press-ui font-medium text-press-text">novelWriter</span>
-              <span class="text-press-eyebrow text-press-muted">Project folder</span>
+              <span class="text-press-eyebrow text-press-muted">{t("Project folder")}</span>
             </label>
           {/if}
 
@@ -608,7 +615,7 @@
             <span
               class="text-press-ui font-medium {exportFormat === 'docx'
                 ? 'text-press-text'
-                : 'text-press-muted'}">Word Document</span
+                : 'text-press-muted'}">{t("Word Document")}</span
             >
             <span class="text-press-eyebrow text-press-muted mt-0.5">.docx</span>
             {#if exportFormat === "docx"}
@@ -668,7 +675,7 @@
                 ? 'text-press-text'
                 : 'text-press-muted'}">Longform</span
             >
-            <span class="text-press-eyebrow text-press-muted mt-0.5">Index + scenes</span>
+            <span class="text-press-eyebrow text-press-muted mt-0.5">{t("Index + scenes")}</span>
             {#if exportFormat === "longform"}
               <div class="absolute top-2 right-2 w-2 h-2 rounded-full bg-press-accent"></div>
             {/if}
@@ -724,7 +731,7 @@
             <span
               class="text-press-ui font-medium {exportFormat === 'treatment'
                 ? 'text-press-text'
-                : 'text-press-muted'}">Treatment</span
+                : 'text-press-muted'}">{t("Treatment")}</span
             >
             <span class="text-press-eyebrow text-press-muted mt-0.5">.docx / .txt</span>
             {#if exportFormat === "treatment"}
@@ -770,7 +777,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Type class="w-4 h-4" />
-            Document Structure
+            {t("Document Structure")}
           </legend>
 
           <!-- Toggle Options -->
@@ -779,7 +786,7 @@
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors group"
             >
               <div class="flex items-center gap-3">
-                <span class="text-press-ui text-press-text">Include title page</span>
+                <span class="text-press-ui text-press-text">{t("Include title page")}</span>
               </div>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeTitlePage} class="peer sr-only" />
@@ -795,7 +802,7 @@
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Page breaks between chapters</span>
+              <span class="text-press-ui text-press-text">{t("Page breaks between chapters")}</span>
               <div class="relative">
                 <input
                   type="checkbox"
@@ -814,7 +821,9 @@
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include beat markers as headings</span>
+              <span class="text-press-ui text-press-text">
+                {t("Include beat markers as headings")}
+              </span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeBeatMarkers} class="peer sr-only" />
                 <div
@@ -829,7 +838,7 @@
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include scene synopses</span>
+              <span class="text-press-ui text-press-text">{t("Include scene synopses")}</span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeSynopsis} class="peer sr-only" />
                 <div
@@ -850,7 +859,7 @@
                 for="chapter-heading-style"
                 class="block text-press-eyebrow text-press-muted mb-1.5"
               >
-                Chapter Heading
+                {t("Chapter Heading")}
               </label>
               <div class="relative">
                 <select
@@ -859,7 +868,7 @@
                   class="w-full appearance-none bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus cursor-pointer"
                 >
                   {#each chapterHeadingStyles as style (style.value)}
-                    <option value={style.value}>{style.label}</option>
+                    <option value={style.value}>{t(style.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -877,7 +886,7 @@
                 for="scene-break-style"
                 class="block text-press-eyebrow text-press-muted mb-1.5"
               >
-                Scene Break
+                {t("Scene Break")}
               </label>
               <div class="relative">
                 <select
@@ -886,7 +895,7 @@
                   class="w-full appearance-none bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus cursor-pointer"
                 >
                   {#each sceneBreakStyles as style (style.value)}
-                    <option value={style.value}>{style.label}</option>
+                    <option value={style.value}>{t(style.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -906,13 +915,13 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <AlignLeft class="w-4 h-4" />
-            Typography
+            {t("Typography")}
           </legend>
           <div class="grid grid-cols-2 gap-3">
             <!-- Font Family -->
             <div>
               <label for="font-family" class="block text-press-eyebrow text-press-muted mb-1.5">
-                Font
+                {t("Font")}
               </label>
               <div class="relative">
                 <select
@@ -933,7 +942,7 @@
             <!-- Line Spacing -->
             <div>
               <label for="line-spacing" class="block text-press-eyebrow text-press-muted mb-1.5">
-                Line Spacing
+                {t("Line Spacing")}
               </label>
               <div class="relative">
                 <select
@@ -942,7 +951,7 @@
                   class="w-full appearance-none bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus cursor-pointer"
                 >
                   {#each lineSpacingOptions as spacing (spacing.value)}
-                    <option value={spacing.value}>{spacing.label}</option>
+                    <option value={spacing.value}>{t(spacing.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -959,7 +968,7 @@
             for="docx-destination"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            Save Location
+            {t("Save Location")}
           </label>
           <div class="flex gap-2">
             <input
@@ -967,16 +976,16 @@
               type="text"
               readonly
               value={docxFilePath}
-              placeholder="Choose where to save..."
+              placeholder={t("Choose where to save...")}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectDocxFile}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectDocxFile}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label="Choose save location"
+                aria-label={t("Choose save location")}
               >
                 <FileText class="w-5 h-5" />
               </button>
@@ -990,14 +999,16 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Type class="w-4 h-4" />
-            Options
+            {t("Options")}
           </legend>
 
           <div class="space-y-2 mb-4">
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include beat markers as headings</span>
+              <span class="text-press-ui text-press-text">
+                {t("Include beat markers as headings")}
+              </span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeBeatMarkers} class="peer sr-only" />
                 <div
@@ -1012,7 +1023,9 @@
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Delete existing export folder</span>
+              <span class="text-press-ui text-press-text">
+                {t("Delete existing export folder")}
+              </span>
               <div class="relative">
                 <input type="checkbox" bind:checked={deleteExisting} class="peer sr-only" />
                 <div
@@ -1029,17 +1042,18 @@
         <!-- Export Name -->
         <div>
           <label for="export-name" class="block text-press-ui font-medium text-press-muted mb-2">
-            Export Name
+            {t("Export Name")}
           </label>
           <input
             id="export-name"
             type="text"
             bind:value={exportName}
-            placeholder="Enter export folder name..."
+            placeholder={t("Enter export folder name...")}
             class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus"
           />
           <p class="text-press-eyebrow text-press-muted mt-1.5">
-            Folder: <span class="text-press-muted"
+            {t("Folder")}:
+            <span class="text-press-muted"
               >{exportName.trim() || currentProject.value?.name || "Project"}</span
             >
           </p>
@@ -1048,7 +1062,7 @@
         <!-- Destination Folder -->
         <div>
           <label for="destination" class="block text-press-ui font-medium text-press-muted mb-2">
-            Destination Folder
+            {t("Destination Folder")}
           </label>
           <div class="flex gap-2">
             <input
@@ -1056,16 +1070,16 @@
               type="text"
               readonly
               value={outputPath}
-              placeholder="Select a folder..."
+              placeholder={t("Select a folder...")}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectDestination}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectDestination}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label="Browse for folder"
+                aria-label={t("Browse for folder")}
               >
                 <FolderOpen class="w-5 h-5" />
               </button>
@@ -1079,14 +1093,16 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Type class="w-4 h-4" />
-            Options
+            {t("Options")}
           </legend>
 
           <div class="space-y-2 mb-4">
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Delete existing export folder</span>
+              <span class="text-press-ui text-press-text">
+                {t("Delete existing export folder")}
+              </span>
               <div class="relative">
                 <input type="checkbox" bind:checked={deleteExisting} class="peer sr-only" />
                 <div
@@ -1106,20 +1122,21 @@
             for="export-name-longform"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            Export Name
+            {t("Export Name")}
           </label>
           <input
             id="export-name-longform"
             type="text"
             bind:value={exportName}
-            placeholder="Enter project name..."
+            placeholder={t("Enter project name...")}
             class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus"
           />
           <p class="text-press-eyebrow text-press-muted mt-1.5">
-            Folder: <span class="text-press-muted"
+            {t("Folder")}:
+            <span class="text-press-muted"
               >{exportName.trim() || currentProject.value?.name || "Project"}</span
             >
-            · Index:
+            · {t("Index")}:
             <span class="text-press-muted"
               >{exportName.trim() || currentProject.value?.name || "Project"}.md</span
             >
@@ -1132,7 +1149,7 @@
             for="destination-longform"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            Destination Folder
+            {t("Destination Folder")}
           </label>
           <div class="flex gap-2">
             <input
@@ -1140,16 +1157,16 @@
               type="text"
               readonly
               value={outputPath}
-              placeholder="Select a folder..."
+              placeholder={t("Select a folder...")}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectDestination}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectDestination}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label="Browse for folder"
+                aria-label={t("Browse for folder")}
               >
                 <FolderOpen class="w-5 h-5" />
               </button>
@@ -1163,7 +1180,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <ScrollText class="w-4 h-4" />
-            Detail Level
+            {t("Detail Level")}
           </legend>
           <div class="space-y-2">
             <label
@@ -1173,9 +1190,9 @@
                 : 'bg-press-sunken hover:bg-press-sunken border border-transparent'}"
             >
               <div>
-                <span class="text-press-ui text-press-text">One-Page</span>
+                <span class="text-press-ui text-press-text">{t("One-Page")}</span>
                 <p class="text-press-eyebrow text-press-muted mt-0.5">
-                  Title, logline, and a short synopsis per act
+                  {t("Title, logline, and a short synopsis per act")}
                 </p>
               </div>
               <input
@@ -1193,9 +1210,9 @@
                 : 'bg-press-sunken hover:bg-press-sunken border border-transparent'}"
             >
               <div>
-                <span class="text-press-ui text-press-text">Five-Page</span>
+                <span class="text-press-ui text-press-text">{t("Five-Page")}</span>
                 <p class="text-press-eyebrow text-press-muted mt-0.5">
-                  Act summaries with key scene descriptions
+                  {t("Act summaries with key scene descriptions")}
                 </p>
               </div>
               <input
@@ -1213,9 +1230,9 @@
                 : 'bg-press-sunken hover:bg-press-sunken border border-transparent'}"
             >
               <div>
-                <span class="text-press-ui text-press-text">Full Treatment</span>
+                <span class="text-press-ui text-press-text">{t("Full Treatment")}</span>
                 <p class="text-press-eyebrow text-press-muted mt-0.5">
-                  Every scene synopsis and beat description
+                  {t("Every scene synopsis and beat description")}
                 </p>
               </div>
               <input
@@ -1235,7 +1252,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <FileText class="w-4 h-4" />
-            Output Format
+            {t("Output Format")}
           </legend>
           <div class="grid grid-cols-2 gap-3">
             <label
@@ -1295,7 +1312,7 @@
             for="treatment-destination"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            Save Location
+            {t("Save Location")}
           </label>
           <div class="flex gap-2">
             <input
@@ -1303,16 +1320,16 @@
               type="text"
               readonly
               value={treatmentFilePath}
-              placeholder="Choose where to save..."
+              placeholder={t("Choose where to save...")}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectTreatmentFile}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectTreatmentFile}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label="Choose save location"
+                aria-label={t("Choose save location")}
               >
                 <FileText class="w-5 h-5" />
               </button>
@@ -1322,59 +1339,64 @@
       {:else if exportFormat === "novelwriter"}
         <div class="space-y-4">
           <p class="text-press-small text-press-muted">
-            Export a complete project for novelWriter 26.2 or newer. Choose an empty folder.
+            {t("Export a complete project for novelWriter 26.2 or newer. Choose an empty folder.")}
           </p>
           <label class="flex items-center gap-3 text-press-ui text-press-text"
             ><input
               type="checkbox"
               data-testid="novelwriter-beat-comments"
               bind:checked={novelwriterBeatComments}
-            /> Include beat comments</label
+            />
+            {t("Include beat comments")}</label
           >
           <p class="text-press-small text-press-muted">
-            Turning off beat comments disables beat-level sync. Page-mode prose syncs as a whole
-            scene.
+            {t(
+              "Turning off beat comments disables beat-level sync. Page-mode prose syncs as a whole scene."
+            )}
           </p>
           <label class="flex items-center gap-3 text-press-ui text-press-text"
             ><input
               type="checkbox"
               data-testid="novelwriter-notes"
               bind:checked={novelwriterNotes}
-            /> Include characters, locations and notes</label
+            />
+            {t("Include characters, locations and notes")}</label
           >
           <label for="novelwriter-destination" class="block text-press-ui text-press-muted"
-            >Destination folder</label
+            >{t("Destination folder")}</label
           >
           <div class="flex gap-2">
             <input
               id="novelwriter-destination"
               readonly
               value={novelwriterPath}
-              placeholder="Choose an empty folder"
+              placeholder={t("Choose an empty folder")}
               class="flex-1 min-w-0 px-3 py-2 bg-press-sunken border border-press-border rounded-lg text-press-base text-press-text"
             />
             <button
               type="button"
               onclick={selectNovelWriterPath}
-              aria-label="Choose novelWriter destination folder"
+              aria-label={t("Choose novelWriter destination folder")}
               class="p-2 border border-press-border rounded-lg"
               ><FolderOpen class="w-5 h-5" /></button
             >
           </div>
           <details class="text-press-small text-press-muted">
-            <summary>Round-trip limitations</summary>
+            <summary>{t("Round-trip limitations")}</summary>
             <p>
-              Export omits underline, planning status, scene type, tags, discovery notes, snapshots
-              and custom fields. Scene status is limited to Draft, Revised and Final.
+              {t(
+                "Export omits underline, planning status, scene type, tags, discovery notes, snapshots and custom fields. Scene status is limited to Draft, Revised and Final."
+              )}
             </p>
             <p>
-              Import flattens H4 sections and does not preserve shortcodes, footnotes, alignment,
-              indent codes, importance, ignored text, templates, additional novel roots or POV,
-              focus, mention and story references.
+              {t(
+                "Import flattens H4 sections and does not preserve shortcodes, footnotes, alignment, indent codes, importance, ignored text, templates, additional novel roots or POV, focus, mention and story references."
+              )}
             </p>
             <p>
-              Sync covers chapters, scenes, beats and prose. Notes, reference links and project
-              metadata are not synced. Existing source connections are preserved when exporting.
+              {t(
+                "Sync covers chapters, scenes, beats and prose. Notes, reference links and project metadata are not synced. Existing source connections are preserved when exporting."
+              )}
             </p>
           </details>
         </div>
@@ -1385,7 +1407,7 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <PenTool class="w-4 h-4" />
-            Export Mode
+            {t("Export Mode")}
           </legend>
           <div class="space-y-2">
             <label
@@ -1395,9 +1417,9 @@
                 : 'bg-press-sunken hover:bg-press-sunken border border-transparent'}"
             >
               <div>
-                <span class="text-press-ui text-press-text">Create New</span>
+                <span class="text-press-ui text-press-text">{t("Create New")}</span>
                 <p class="text-press-eyebrow text-press-muted mt-0.5">
-                  Build a fresh .scriv project from your outline
+                  {t("Build a fresh .scriv project from your outline")}
                 </p>
               </div>
               <input
@@ -1415,9 +1437,9 @@
                 : 'bg-press-sunken hover:bg-press-sunken border border-transparent'}"
             >
               <div>
-                <span class="text-press-ui text-press-text">Update Existing</span>
+                <span class="text-press-ui text-press-text">{t("Update Existing")}</span>
                 <p class="text-press-eyebrow text-press-muted mt-0.5">
-                  Write prose back into an existing .scriv bundle
+                  {t("Write prose back into an existing .scriv bundle")}
                 </p>
               </div>
               <input
@@ -1438,16 +1460,16 @@
               class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
             >
               <Type class="w-4 h-4" />
-              Update Options
+              {t("Update Options")}
             </legend>
             <div class="space-y-2">
               <label
                 class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
               >
                 <div>
-                  <span class="text-press-ui text-press-text">Backup before updating</span>
+                  <span class="text-press-ui text-press-text">{t("Backup before updating")}</span>
                   <p class="text-press-eyebrow text-press-muted mt-0.5">
-                    Creates a timestamped copy of the .scriv bundle
+                    {t("Creates a timestamped copy of the .scriv bundle")}
                   </p>
                 </div>
                 <div class="relative">
@@ -1465,9 +1487,9 @@
                 class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
               >
                 <div>
-                  <span class="text-press-ui text-press-text">Include unmatched scenes</span>
+                  <span class="text-press-ui text-press-text">{t("Include unmatched scenes")}</span>
                   <p class="text-press-eyebrow text-press-muted mt-0.5">
-                    Create new Scrivener documents for scenes without matches
+                    {t("Create new Scrivener documents for scenes without matches")}
                   </p>
                 </div>
                 <div class="relative">
@@ -1489,7 +1511,9 @@
         {/if}
 
         <p class="text-press-eyebrow text-press-muted bg-press-sunken rounded-lg px-3 py-2">
-          Note: Characters, locations, and scene references are not included in Scrivener exports.
+          {t(
+            "Note: Characters, locations, and scene references are not included in Scrivener exports."
+          )}
         </p>
 
         <!-- Save/Select Location -->
@@ -1498,7 +1522,7 @@
             for="scrivener-destination"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            {scrivenerMode === "create_new" ? "Save Location" : "Select .scriv Bundle"}
+            {t(scrivenerMode === "create_new" ? "Save Location" : "Select .scriv Bundle")}
           </label>
           <div class="flex gap-2">
             <input
@@ -1506,20 +1530,22 @@
               type="text"
               readonly
               value={scrivenerPath}
-              placeholder={scrivenerMode === "create_new"
-                ? "Choose where to save..."
-                : "Select existing .scriv folder..."}
+              placeholder={t(
+                scrivenerMode === "create_new"
+                  ? "Choose where to save..."
+                  : "Select existing .scriv folder..."
+              )}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectScrivenerPath}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectScrivenerPath}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label={scrivenerMode === "create_new"
-                  ? "Choose save location"
-                  : "Select .scriv bundle"}
+                aria-label={t(
+                  scrivenerMode === "create_new" ? "Choose save location" : "Select .scriv bundle"
+                )}
               >
                 <FolderOpen class="w-5 h-5" />
               </button>
@@ -1533,48 +1559,48 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Type class="w-4 h-4" />
-            Metadata
+            {t("Metadata")}
           </legend>
           <div class="space-y-3">
             <div>
               <label for="epub-title" class="block text-press-eyebrow text-press-muted mb-1.5"
-                >Title</label
+                >{t("Title")}</label
               >
               <input
                 id="epub-title"
                 type="text"
                 bind:value={epubTitle}
-                placeholder="Book title"
+                placeholder={t("Book title")}
                 class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus"
               />
             </div>
             <div>
               <label for="epub-author" class="block text-press-eyebrow text-press-muted mb-1.5"
-                >Author</label
+                >{t("Author")}</label
               >
               <input
                 id="epub-author"
                 type="text"
                 bind:value={epubAuthor}
-                placeholder="Author name"
+                placeholder={t("Author name")}
                 class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus"
               />
             </div>
             <div>
               <label for="epub-description" class="block text-press-eyebrow text-press-muted mb-1.5"
-                >Description</label
+                >{t("Description")}</label
               >
               <textarea
                 id="epub-description"
                 rows="3"
                 bind:value={epubDescription}
-                placeholder="Short blurb or summary"
+                placeholder={t("Short blurb or summary")}
                 class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus resize-none"
               ></textarea>
             </div>
             <div>
               <label for="epub-language" class="block text-press-eyebrow text-press-muted mb-1.5"
-                >Language</label
+                >{t("Language")}</label
               >
               <input
                 id="epub-language"
@@ -1584,7 +1610,7 @@
                 class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus"
               />
               <p class="text-press-eyebrow text-press-muted mt-1">
-                Use ISO 639-1 codes (e.g., en, es).
+                {t("Use ISO 639-1 codes (e.g., en, es).")}
               </p>
             </div>
           </div>
@@ -1595,13 +1621,15 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <AlignLeft class="w-4 h-4" />
-            Content
+            {t("Content")}
           </legend>
           <div class="space-y-2">
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include beat markers as headings</span>
+              <span class="text-press-ui text-press-text">
+                {t("Include beat markers as headings")}
+              </span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeBeatMarkers} class="peer sr-only" />
                 <div
@@ -1615,7 +1643,7 @@
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include scene synopses</span>
+              <span class="text-press-ui text-press-text">{t("Include scene synopses")}</span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeSynopsis} class="peer sr-only" />
                 <div
@@ -1634,11 +1662,11 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <Type class="w-4 h-4" />
-            Styling
+            {t("Styling")}
           </legend>
           <div>
             <label for="epub-theme" class="block text-press-eyebrow text-press-muted mb-1.5"
-              >Theme</label
+              >{t("Theme")}</label
             >
             <div class="relative">
               <select
@@ -1647,7 +1675,7 @@
                 class="w-full appearance-none bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-press-accent focus:ring-1 focus:ring-press-focus cursor-pointer"
               >
                 {#each epubThemeOptions as theme (theme.value)}
-                  <option value={theme.value}>{theme.label}</option>
+                  <option value={theme.value}>{t(theme.label)}</option>
                 {/each}
               </select>
               <ChevronDown
@@ -1662,13 +1690,13 @@
             class="flex items-center gap-2 text-press-ui font-medium text-press-accent-text mb-3"
           >
             <ImageIcon class="w-4 h-4" />
-            Cover
+            {t("Cover")}
           </legend>
           <div class="space-y-3">
             <label
               class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
             >
-              <span class="text-press-ui text-press-text">Include cover image</span>
+              <span class="text-press-ui text-press-text">{t("Include cover image")}</span>
               <div class="relative">
                 <input type="checkbox" bind:checked={includeCoverImage} class="peer sr-only" />
                 <div
@@ -1683,7 +1711,7 @@
             {#if includeCoverImage}
               <div>
                 <label for="cover-image" class="block text-press-eyebrow text-press-muted mb-1.5"
-                  >Cover image</label
+                  >{t("Cover image")}</label
                 >
                 <div class="flex gap-2">
                   <input
@@ -1691,16 +1719,16 @@
                     type="text"
                     readonly
                     value={coverImagePath}
-                    placeholder="Select an image..."
+                    placeholder={t("Select an image...")}
                     class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
                     onclick={selectCoverImage}
                   />
-                  <Tooltip text="Browse" position="top">
+                  <Tooltip text={t("Browse")} position="top">
                     <button
                       type="button"
                       onclick={selectCoverImage}
                       class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                      aria-label="Select cover image"
+                      aria-label={t("Select cover image")}
                     >
                       <ImageIcon class="w-5 h-5" />
                     </button>
@@ -1717,7 +1745,7 @@
             for="epub-destination"
             class="block text-press-ui font-medium text-press-muted mb-2"
           >
-            Save Location
+            {t("Save Location")}
           </label>
           <div class="flex gap-2">
             <input
@@ -1725,16 +1753,16 @@
               type="text"
               readonly
               value={epubFilePath}
-              placeholder="Choose where to save..."
+              placeholder={t("Choose where to save...")}
               class="flex-1 bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2.5 focus:outline-none focus:border-press-accent cursor-pointer truncate"
               onclick={selectEpubFile}
             />
-            <Tooltip text="Browse" position="top">
+            <Tooltip text={t("Browse")} position="top">
               <button
                 type="button"
                 onclick={selectEpubFile}
                 class="px-3 py-2.5 bg-press-sunken text-press-muted rounded-lg hover:bg-press-sunken hover:text-press-text transition-colors border border-press-border"
-                aria-label="Choose save location"
+                aria-label={t("Choose save location")}
               >
                 <Book class="w-5 h-5" />
               </button>
@@ -1749,9 +1777,11 @@
           class="flex items-center justify-between p-3 bg-press-sunken rounded-lg cursor-pointer hover:bg-press-sunken transition-colors"
         >
           <div>
-            <span class="text-press-ui text-press-text">Create snapshot before exporting</span>
+            <span class="text-press-ui text-press-text">
+              {t("Create snapshot before exporting")}
+            </span>
             <p class="text-press-eyebrow text-press-muted mt-0.5">
-              Save a backup of your current work
+              {t("Save a backup of your current work")}
             </p>
           </div>
           <div class="relative">
@@ -1784,7 +1814,7 @@
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors rounded-lg hover:bg-press-sunken"
         disabled={exporting}
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         type="button"
@@ -1795,10 +1825,10 @@
       >
         {#if exporting}
           <Loader2 class="w-4 h-4 animate-spin" />
-          Exporting...
+          {t("Exporting...")}
         {:else}
           <FileDown class="w-4 h-4" />
-          Export
+          {t("Export")}
         {/if}
       </button>
     </div>

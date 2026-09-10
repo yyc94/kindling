@@ -27,6 +27,7 @@ import {
 
 export type View = "start" | "editor";
 export type Panel = "sidebar" | "editor" | "references";
+export type Locale = "en" | "zh-CN";
 export type OnboardingStep =
   | "welcome"
   | "tour-sidebar"
@@ -46,6 +47,7 @@ const ONBOARDING_COMPLETED_KEY = "kindling:onboardingCompleted";
 // Guidance preferences (Phase C)
 const GUIDANCE_ENABLED_KEY = "kindling:guidanceEnabled";
 const TOOLTIP_SEEN_PREFIX = "kindling:tooltipSeen:";
+const LOCALE_STORAGE_KEY = "kindling:locale";
 
 export type GuidanceArea =
   | "sidebar"
@@ -90,6 +92,9 @@ class UIStore {
   // Theme
   private _theme = $state<ThemePreference>("light");
 
+  // Language
+  private _locale = $state<Locale>("en");
+
   constructor() {
     const saved = localStorage.getItem(REFERENCES_PANEL_STORAGE_KEY);
     if (saved) {
@@ -108,6 +113,15 @@ class UIStore {
 
     this._theme = getStoredPreference();
     initTheme();
+
+    const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
+    this._locale =
+      storedLocale === "en" || storedLocale === "zh-CN"
+        ? storedLocale
+        : navigator.language.toLowerCase().startsWith("zh")
+          ? "zh-CN"
+          : "en";
+    document.documentElement.lang = this._locale;
 
     window.addEventListener("resize", () => {
       const maxWidth = this.referencesPanelMaxWidth;
@@ -188,6 +202,16 @@ class UIStore {
 
   get toast() {
     return this._toast;
+  }
+
+  get locale() {
+    return this._locale;
+  }
+
+  setLocale(locale: Locale) {
+    this._locale = locale;
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    document.documentElement.lang = locale;
   }
 
   setView(view: View) {

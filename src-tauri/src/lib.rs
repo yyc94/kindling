@@ -134,7 +134,7 @@ pub fn run() {
 
             // Set up application menu
             let app_handle = app.handle();
-            menu::create_menu(app_handle).expect("Failed to create menu");
+            menu::create_menu(app_handle, "en").expect("Failed to create menu");
             menu::setup_menu_events(app_handle);
 
             Ok(())
@@ -307,6 +307,7 @@ pub fn run() {
             commands::delete_user_template,
             // Feedback commands
             commands::submit_feedback,
+            menu::set_menu_locale,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

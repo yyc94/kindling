@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
+import { invoke } from "@tauri-apps/api/core";
 import BeatView from "./BeatView.svelte";
 import { currentProject } from "../stores/project.svelte";
 import { ui } from "../stores/ui.svelte";
@@ -39,4 +40,21 @@ it("updates the beat title and scroll target on scene switch without needing a h
   await fireEvent.click(screen.getByTestId("beat-header"));
   expect(scroll).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   expect(ui.expandedBeatId).toBe(second.id);
+});
+
+it("does not submit a beat rename while an input method is composing", async () => {
+  const beat = {
+    id: "beat",
+    scene_id: "scene",
+    content: "Original",
+    prose: null,
+    position: 0,
+  };
+  render(BeatView, { beats: [beat] });
+  await fireEvent.click(screen.getByTestId("beat-menu-button"));
+  await fireEvent.click(screen.getByRole("menuitem", { name: "Rename" }));
+  const input = screen.getByDisplayValue("Original");
+  await fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+  expect(input.isConnected).toBe(true);
+  expect(invoke).not.toHaveBeenCalledWith("rename_beat", expect.anything());
 });

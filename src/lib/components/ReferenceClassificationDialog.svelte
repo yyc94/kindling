@@ -10,6 +10,7 @@
     ReferenceReclassification,
     ReferenceTypeId,
   } from "../types";
+  import { t } from "../i18n.svelte";
 
   interface Props {
     projectId: string;
@@ -67,7 +68,7 @@
       return references.length === 0;
     } catch (e) {
       console.error("Failed to load reference classifications:", e);
-      error = e instanceof Error ? e.message : "Failed to load references";
+      error = e instanceof Error ? e.message : t("Failed to load references");
       references = [];
       return false;
     } finally {
@@ -107,7 +108,7 @@
       onComplete(project);
     } catch (e) {
       console.error("Failed to save reference classifications:", e);
-      error = e instanceof Error ? e.message : "Failed to save reference classifications";
+      error = e instanceof Error ? e.message : t("Failed to save reference classifications");
     } finally {
       saving = false;
     }
@@ -136,27 +137,31 @@
       id="reference-classification-title"
       class="text-press-body-lg font-heading font-medium text-press-text mb-2"
     >
-      Review Reference Types
+      {t("Review Reference Types")}
     </h3>
     <p class="text-press-muted text-press-ui mb-4">
-      We found some references during import. Tweak their type now, or skip to keep our best guess.
+      {t(
+        "We found some references during import. Tweak their type now, or skip to keep our best guess."
+      )}
     </p>
 
     {#if loading}
-      <div class="text-press-ui text-press-muted py-6 text-center">Loading references…</div>
+      <div class="text-press-ui text-press-muted py-6 text-center">
+        {t("Loading references…")}
+      </div>
     {:else if error}
       <div class="text-press-ui text-press-error py-6 text-center">{error}</div>
     {:else if references.length === 0}
       <div class="text-press-ui text-press-muted py-6 text-center">
-        No references detected for this project.
+        {t("No references detected for this project.")}
       </div>
     {:else}
       <div class="max-h-[60vh] overflow-y-auto border border-press-border rounded-lg">
         <table class="w-full text-press-ui">
           <thead class="sticky top-0 bg-press-surface">
             <tr class="text-left text-press-muted">
-              <th class="px-4 py-3 font-medium">Reference</th>
-              <th class="px-4 py-3 font-medium w-48">Type</th>
+              <th class="px-4 py-3 font-medium">{t("Reference")}</th>
+              <th class="px-4 py-3 font-medium w-48">{t("Type")}</th>
             </tr>
           </thead>
           <tbody>
@@ -186,7 +191,7 @@
                       )}
                   >
                     {#each typeOptions as option (option.id)}
-                      <option value={option.id}>{option.label}</option>
+                      <option value={option.id}>{t(option.label)}</option>
                     {/each}
                   </select>
                 </td>
@@ -202,14 +207,14 @@
         onclick={onClose}
         class="px-4 py-2 rounded bg-press-sunken text-press-text hover:bg-press-sunken transition-colors"
       >
-        Skip for now
+        {t("Skip for now")}
       </button>
       <button
         onclick={saveChanges}
         class="px-4 py-2 rounded bg-press-accent text-press-on-accent hover:bg-press-accent-text transition-colors"
         disabled={saving || loading || references.length === 0}
       >
-        {saving ? "Saving…" : "Apply changes"}
+        {t(saving ? "Saving…" : "Apply changes")}
       </button>
     </div>
   </div>

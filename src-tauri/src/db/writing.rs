@@ -9,6 +9,28 @@ use uuid::Uuid;
 
 use crate::parsers::html::{html_events, HtmlEvent};
 
+fn is_han(character: char) -> bool {
+    matches!(
+        character,
+        '\u{3400}'..='\u{4DBF}'
+            | '\u{4E00}'..='\u{9FFF}'
+            | '\u{F900}'..='\u{FAFF}'
+            | '\u{20000}'..='\u{2FA1F}'
+    )
+}
+
+fn count_text_words(text: &str) -> i64 {
+    text.split_whitespace()
+        .map(|token| {
+            let han = token.chars().filter(|&character| is_han(character)).count() as i64;
+            let non_han_word = token.chars().any(|character| {
+                !is_han(character) && (character.is_alphanumeric() || character == '_')
+            });
+            han + if han == 0 || non_han_word { 1 } else { 0 }
+        })
+        .sum()
+}
+
 pub fn count_words(html: &str) -> i64 {
     let mut text = String::new();
     for event in html_events(html) {
@@ -25,7 +47,7 @@ pub fn count_words(html: &str) -> i64 {
             _ => (),
         }
     }
-    text.split_whitespace().count() as i64
+    count_text_words(&text)
 }
 
 pub fn scene_words(conn: &Connection, scene_id: &Uuid) -> Result<i64> {
@@ -288,6 +310,7 @@ mod tests {
             count_words("<p>one</p><!-- ignored --><p>two &amp; three</p>"),
             4
         );
+        assert_eq!(count_words("<p>你好世界</p>"), 4);
         assert_eq!(count_words(""), 0);
     }
 

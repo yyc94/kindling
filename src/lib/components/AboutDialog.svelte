@@ -3,6 +3,7 @@
   import { openUrl } from "@tauri-apps/plugin-opener";
   import { X, ExternalLink, Flame, Send } from "lucide-svelte";
   import { onMount } from "svelte";
+  import { t } from "../i18n.svelte";
 
   let { onClose, onSendFeedback }: { onClose: () => void; onSendFeedback: () => void } = $props();
 
@@ -42,12 +43,12 @@
   >
     <div class="flex items-center justify-between p-5 border-b border-press-border shrink-0">
       <h2 id="about-title" class="text-press-body-lg font-heading font-semibold text-press-text">
-        About Kindling
+        {t("About Kindling")}
       </h2>
       <button
         onclick={onClose}
         class="p-1 rounded hover:bg-press-sunken text-press-muted transition-colors"
-        aria-label="Close"
+        aria-label={t("Close")}
         data-testid="about-close"
       >
         <X class="w-5 h-5" />
@@ -61,11 +62,11 @@
 
       <div>
         <h3 class="text-press-body-lg font-heading font-semibold text-press-text">Kindling</h3>
-        <p class="text-press-ui text-press-muted mt-0.5">Version {version}</p>
+        <p class="text-press-ui text-press-muted mt-0.5">{t("Version {version}", { version })}</p>
       </div>
 
       <p class="font-prose text-press-body text-press-text leading-relaxed max-w-press-measure">
-        Spark your draft &mdash; Bridge the gap between outline and prose.
+        {t("Spark your draft — Bridge the gap between outline and prose.")}
       </p>
 
       <div class="w-full border-t border-press-border pt-4 flex flex-col gap-2">
@@ -74,28 +75,28 @@
           class="flex items-center gap-2 w-full px-3 py-2 text-press-ui text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
         >
           <Send class="w-4 h-4 shrink-0" />
-          Send Feedback
+          {t("Send Feedback")}
         </button>
         <button
           onclick={() => openLink("https://github.com/smith-and-web/kindling")}
           class="flex items-center gap-2 w-full px-3 py-2 text-press-ui text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
         >
           <ExternalLink class="w-4 h-4 shrink-0" />
-          GitHub Repository
+          {t("GitHub Repository")}
         </button>
         <button
           onclick={() => openLink("https://github.com/smith-and-web/kindling/issues/new")}
           class="flex items-center gap-2 w-full px-3 py-2 text-press-ui text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
         >
           <ExternalLink class="w-4 h-4 shrink-0" />
-          Report an Issue
+          {t("Report an Issue")}
         </button>
         <button
           onclick={() => openLink("https://github.com/smith-and-web/kindling/releases")}
           class="flex items-center gap-2 w-full px-3 py-2 text-press-ui text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
         >
           <ExternalLink class="w-4 h-4 shrink-0" />
-          Release Notes
+          {t("Release Notes")}
         </button>
       </div>
     </div>

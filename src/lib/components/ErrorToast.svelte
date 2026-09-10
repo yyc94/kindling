@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { X } from "lucide-svelte";
+  import { t } from "../i18n.svelte";
 
   interface Props {
     message: string;
@@ -48,7 +49,7 @@
         <button
           class="text-press-muted hover:text-press-text transition-colors"
           onclick={onDismiss}
-          aria-label="Dismiss error"
+          aria-label={t("Dismiss error")}
         >
           <X class="w-4 h-4" />
         </button>

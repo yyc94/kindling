@@ -45,6 +45,7 @@
   import SuggestionCard from "./SuggestionCard.svelte";
   import TagSelector from "./TagSelector.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let { contextSceneId, embedded = false }: { contextSceneId?: string | null; embedded?: boolean } =
     $props();
@@ -297,7 +298,7 @@
       showReferenceTypeSettings = false;
     } catch (e) {
       console.error("Failed to update reference types:", e);
-      referenceTypeError = e instanceof Error ? e.message : "Failed to update reference types";
+      referenceTypeError = e instanceof Error ? e.message : t("Failed to update reference types");
     } finally {
       referenceTypeSaving = false;
     }
@@ -332,7 +333,8 @@
     } catch (e) {
       if (requestId !== sceneReferenceRequestId) return;
       console.error("Failed to load scene reference state:", e);
-      sceneReferenceError = e instanceof Error ? e.message : "Failed to load scene reference state";
+      sceneReferenceError =
+        e instanceof Error ? e.message : t("Failed to load scene reference state");
       sceneReferenceStates = [];
       syncExpandedIdsFromState([]);
     } finally {
@@ -435,7 +437,8 @@
       ui.bumpSceneReferenceRefresh();
     } catch (e) {
       console.error("Failed to save scene reference state:", e);
-      sceneReferenceError = e instanceof Error ? e.message : "Failed to save scene reference state";
+      sceneReferenceError =
+        e instanceof Error ? e.message : t("Failed to save scene reference state");
     }
   }
 
@@ -649,7 +652,7 @@
       }
     } catch (e) {
       console.error("Failed to delete reference:", e);
-      ui.showError(`Failed to delete reference: ${e}`);
+      ui.showError(t("Failed to delete reference: {error}", { error: String(e) }));
     } finally {
       deleteTarget = null;
     }
@@ -880,7 +883,7 @@
       onkeydown={onResizeKeydown}
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize references panel"
+      aria-label={t("Resize references panel")}
       aria-valuenow={ui.referencesPanelWidth}
       aria-valuemin={ui.referencesPanelMinWidth}
       aria-valuemax={ui.referencesPanelMaxWidth}
@@ -890,14 +893,16 @@
   <!-- Header with tabs -->
   <div class="border-b border-press-border">
     <div class="flex items-center justify-between px-4 py-2">
-      <h2 class="text-press-ui font-heading font-medium text-press-text">References</h2>
+      <h2 class="text-press-ui font-heading font-medium text-press-text">
+        {t("References")}
+      </h2>
       <div class="flex items-center gap-1">
-        <Tooltip text="Copy references from project…" position="bottom">
+        <Tooltip text={t("Copy references from project…")} position="bottom">
           <button
             onclick={() => (copyDestination = currentProject.value)}
             disabled={!currentProject.value || editDialog !== null}
             class="text-press-muted hover:text-press-text p-1 disabled:cursor-not-allowed"
-            aria-label="Copy references from project…"
+            aria-label={t("Copy references from project…")}
           >
             <Copy class="w-4 h-4" />
           </button>
@@ -905,14 +910,16 @@
         <!-- Add Reference button -->
         <Tooltip
           text={activeTab
-            ? `Add ${getReferenceTypeOption(activeTab)?.label ?? "Reference"}`
-            : "Add reference"}
+            ? t("Add {type}", {
+                type: t(getReferenceTypeOption(activeTab)?.label ?? "Reference"),
+              })
+            : t("Add reference")}
           position="bottom"
         >
           <button
             onclick={openCreateDialog}
             class="text-press-muted hover:text-press-text p-1 disabled:cursor-not-allowed"
-            aria-label="Add reference"
+            aria-label={t("Add reference")}
             data-testid="add-reference-button"
             disabled={!activeTab}
           >
@@ -920,41 +927,41 @@
           </button>
         </Tooltip>
         <!-- Reference Types settings -->
-        <Tooltip text="Reference types" position="bottom">
+        <Tooltip text={t("Reference types")} position="bottom">
           <button
             onclick={openReferenceTypeSettings}
             class="text-press-muted hover:text-press-text p-1"
-            aria-label="Reference types settings"
+            aria-label={t("Reference types settings")}
           >
             <Settings class="w-4 h-4" />
           </button>
         </Tooltip>
         <!-- Collapse All button -->
-        <Tooltip text="Collapse all" position="bottom">
+        <Tooltip text={t("Collapse all")} position="bottom">
           <button
             onclick={collapseAll}
             class="text-press-muted hover:text-press-text p-1"
-            aria-label="Collapse all"
+            aria-label={t("Collapse all")}
           >
             <ListChevronsDownUp class="w-4 h-4" />
           </button>
         </Tooltip>
         <!-- Sort Alphabetically button -->
-        <Tooltip text="Sort A-Z" position="bottom">
+        <Tooltip text={t("Sort A-Z")} position="bottom">
           <button
             onclick={sortAlphabetically}
             class="text-press-muted hover:text-press-text p-1"
-            aria-label="Sort alphabetically"
+            aria-label={t("Sort alphabetically")}
           >
             <ArrowDownAZ class="w-4 h-4" />
           </button>
         </Tooltip>
         <!-- Close panel button -->
-        {#if !embedded}<Tooltip text="Collapse panel" position="bottom">
+        {#if !embedded}<Tooltip text={t("Collapse panel")} position="bottom">
             <button
               onclick={toggleReferencesPanel}
               class="text-press-muted hover:text-press-text p-1"
-              aria-label="Collapse references panel"
+              aria-label={t("Collapse references panel")}
             >
               <ChevronsRight class="w-4 h-4" />
             </button>
@@ -973,7 +980,7 @@
           class:border-press-accent={activeTab === typeOption.id}
           class:text-press-muted={activeTab !== typeOption.id}
         >
-          {typeOption.label} ({getReferenceCount(typeOption.id)})
+          {t(typeOption.label)} ({getReferenceCount(typeOption.id)})
         </button>
       {/each}
     </div>
@@ -992,7 +999,7 @@
           <ChevronRight class="w-3 h-3" />
         {/if}
         <Zap class="w-3 h-3 text-press-warning" />
-        Suggested
+        {t("Suggested")}
         {#if suggestions.length > 0}
           <span
             class="ml-auto bg-press-warning-wash text-press-warning text-press-eyebrow px-1.5 py-0.5 rounded-full"
@@ -1004,7 +1011,7 @@
       {#if suggestionsOpen}
         <div class="px-2 pb-2 space-y-1">
           {#if suggestionsLoading}
-            <p class="text-press-eyebrow text-press-muted px-1 py-2">Detecting...</p>
+            <p class="text-press-eyebrow text-press-muted px-1 py-2">{t("Detecting...")}</p>
           {:else}
             {#if suggestions.length > 1}
               <div class="flex items-center justify-end gap-2 px-1 pb-1">
@@ -1012,13 +1019,13 @@
                   onclick={linkAllSuggestions}
                   class="text-press-eyebrow text-press-accent-text hover:text-press-accent-text transition-colors"
                 >
-                  Link All
+                  {t("Link All")}
                 </button>
                 <button
                   onclick={dismissAllSuggestions}
                   class="text-press-eyebrow text-press-muted hover:text-press-text transition-colors"
                 >
-                  Dismiss All
+                  {t("Dismiss All")}
                 </button>
               </div>
             {/if}
@@ -1039,18 +1046,20 @@
   <div class="flex-1 overflow-y-auto p-2">
     {#if loading}
       <div class="flex items-center justify-center p-4">
-        <span class="text-press-muted text-press-ui">Loading...</span>
+        <span class="text-press-muted text-press-ui">{t("Loading...")}</span>
       </div>
     {:else if !activeTab}
       <div class="flex items-center justify-center p-4">
         <span class="text-press-muted text-press-ui">
-          No reference types enabled. Use the settings cog to enable them.
+          {t("No reference types enabled. Use the settings cog to enable them.")}
         </span>
       </div>
     {:else if activeItems.length === 0}
       <div class="flex items-center justify-center p-4">
         <span class="text-press-muted text-press-ui">
-          No {activeTypeOption?.label.toLowerCase() ?? "references"}
+          {t("No {type}", {
+            type: t(activeTypeOption?.label ?? "references"),
+          })}
         </span>
       </div>
     {:else}
@@ -1058,16 +1067,16 @@
         <div
           class="flex items-center justify-between px-1 pb-2 text-press-eyebrow text-press-muted"
         >
-          <span class="uppercase tracking-wide">Linked to this scene</span>
+          <span class="uppercase tracking-wide">{t("Linked to this scene")}</span>
           {#if sceneReferenceLoading}
-            <span>Loading…</span>
+            <span>{t("Loading…")}</span>
           {/if}
         </div>
         {#if sceneReferenceError}
           <div class="px-1 pb-2 text-press-eyebrow text-press-error">{sceneReferenceError}</div>
         {:else if linkedItems.length === 0 && !sceneReferenceLoading}
           <div class="px-1 pb-2 text-press-eyebrow text-press-muted">
-            No references linked to this scene yet.
+            {t("No references linked to this scene yet.")}
           </div>
         {/if}
       {/if}
@@ -1081,7 +1090,7 @@
             <div
               class="border-t border-press-border pt-3 mt-3 text-press-eyebrow text-press-muted uppercase tracking-wide"
             >
-              All references
+              {t("All references")}
             </div>
           {/if}
           <div
@@ -1100,12 +1109,15 @@
                 onmousedown={(e) => onDragHandleMouseDown(e, reference.id, canDrag)}
                 role="button"
                 tabindex="-1"
-                aria-label="Drag to reorder"
+                aria-label={t("Drag to reorder")}
               >
                 <GripVertical class="w-4 h-4" />
               </div>
               {#if referenceScene}
-                <Tooltip text={isLinked ? "Unlink from scene" : "Link to scene"} position="bottom">
+                <Tooltip
+                  text={t(isLinked ? "Unlink from scene" : "Link to scene")}
+                  position="bottom"
+                >
                   <button
                     onclick={() => toggleSceneLink(reference)}
                     class={`shrink-0 inline-flex items-center gap-1 rounded border px-2 py-1 text-press-eyebrow transition-colors ${
@@ -1113,10 +1125,10 @@
                         ? "border-press-accent text-press-accent-text hover:border-press-accent"
                         : "border-press-border text-press-muted hover:text-press-text hover:border-press-accent"
                     }`}
-                    aria-label={isLinked ? "Unlink from scene" : "Link to scene"}
+                    aria-label={t(isLinked ? "Unlink from scene" : "Link to scene")}
                   >
                     <Link2 class="w-3 h-3" />
-                    <span>{isLinked ? "Unlink" : "Link"}</span>
+                    <span>{t(isLinked ? "Unlink" : "Link")}</span>
                   </button>
                 </Tooltip>
               {/if}
@@ -1195,7 +1207,7 @@
                           <span class="text-press-muted font-medium shrink-0">{def.name}:</span>
                           <span class="text-press-text wrap-break-word">
                             {#if def.field_type === "checkbox"}
-                              {fv === "true" ? "Yes" : "No"}
+                              {t(fv === "true" ? "Yes" : "No")}
                             {:else if def.field_type === "multiselect" || def.field_type === "multi_select"}
                               {(() => {
                                 try {
@@ -1235,7 +1247,7 @@
                 {#if currentProject.value}
                   <div class="mt-3">
                     <span class="text-press-eyebrow text-press-muted font-medium block mb-1"
-                      >Tags</span
+                      >{t("Tags")}</span
                     >
                     <TagSelector
                       projectId={currentProject.value.id}
@@ -1251,24 +1263,26 @@
                 {/if}
 
                 {#if !reference.description && !notes && attributes.length === 0 && !hasFieldValues}
-                  <p class="text-press-muted text-press-ui mt-3 italic">No additional details</p>
+                  <p class="text-press-muted text-press-ui mt-3 italic">
+                    {t("No additional details")}
+                  </p>
                 {/if}
 
                 <div class="flex items-center gap-2 mt-4">
-                  <Tooltip text="Edit" position="bottom">
+                  <Tooltip text={t("Edit")} position="bottom">
                     <button
                       onclick={() => openEditDialog(reference)}
                       class="text-press-muted hover:text-press-text p-1"
-                      aria-label="Edit reference"
+                      aria-label={t("Edit reference")}
                     >
                       <Pencil class="w-4 h-4" />
                     </button>
                   </Tooltip>
-                  <Tooltip text="Delete" position="bottom">
+                  <Tooltip text={t("Delete")} position="bottom">
                     <button
                       onclick={() => (deleteTarget = reference)}
                       class="text-press-muted hover:text-press-error p-1"
-                      aria-label="Delete reference"
+                      aria-label={t("Delete reference")}
                     >
                       <Trash2 class="w-4 h-4" />
                     </button>
@@ -1285,11 +1299,11 @@
 
 <!-- Collapsed panel toggle -->
 {#if ui.referencesPanelCollapsed}
-  <Tooltip text="Expand references" position="left">
+  <Tooltip text={t("Expand references")} position="left">
     <button
       onclick={toggleReferencesPanel}
       class="fixed right-0 top-1/2 -translate-y-1/2 bg-press-surface p-2 rounded-l-lg text-press-muted hover:text-press-text z-press-raised"
-      aria-label="Expand references panel"
+      aria-label={t("Expand references panel")}
     >
       <ChevronsLeft class="w-5 h-5" />
     </button>
@@ -1308,9 +1322,9 @@
 
 {#if deleteTarget}
   <ConfirmDialog
-    title="Delete reference?"
-    message={`This will permanently delete "${deleteTarget.name}".`}
-    confirmLabel="Delete"
+    title={t("Delete reference?")}
+    message={t('This will permanently delete "{name}".', { name: deleteTarget.name })}
+    confirmLabel={t("Delete")}
     onConfirm={handleDeleteReference}
     onCancel={() => (deleteTarget = null)}
   />
@@ -1329,14 +1343,14 @@
     >
       <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
         <h2 id="reference-types-title" class="text-press-body-lg font-medium text-press-text">
-          Reference Types
+          {t("Reference Types")}
         </h2>
-        <Tooltip text="Close" position="left">
+        <Tooltip text={t("Close")} position="left">
           <button
             type="button"
             onclick={closeReferenceTypeSettings}
             class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-            aria-label="Close"
+            aria-label={t("Close")}
           >
             <ChevronsRight class="w-4 h-4" />
           </button>
@@ -1344,7 +1358,7 @@
       </div>
       <div class="p-4 space-y-3">
         <p class="text-press-ui text-press-muted">
-          Choose which reference types appear in this project’s References panel.
+          {t("Choose which reference types appear in this project’s References panel.")}
         </p>
         <div class="space-y-2">
           {#each REFERENCE_TYPE_OPTIONS as option (option.id)}
@@ -1356,7 +1370,7 @@
                 disabled={referenceTypeSaving}
                 onclick={() => toggleReferenceType(option.id)}
               />
-              <span>{option.label}</span>
+              <span>{t(option.label)}</span>
             </label>
           {/each}
         </div>
@@ -1371,7 +1385,7 @@
           class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
           disabled={referenceTypeSaving}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           type="button"
@@ -1379,7 +1393,7 @@
           class="px-4 py-2 text-press-ui bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
           disabled={referenceTypeSaving}
         >
-          {referenceTypeSaving ? "Saving..." : "Save"}
+          {t(referenceTypeSaving ? "Saving..." : "Save")}
         </button>
       </div>
     </div>

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from "../i18n.svelte";
+
   interface Props {
     partTitle: string;
     childChapterCount: number;
@@ -40,13 +42,16 @@
     class="app-dialog-surface bg-press-surface rounded-lg p-6 max-w-md w-full mx-4 shadow-press-overlay"
   >
     <h3 id="dialog-title" class="text-press-body-lg font-heading font-medium text-press-text mb-4">
-      Delete {partLabel}
+      {t("Delete {type}", { type: t(partLabel) })}
     </h3>
     <p class="text-press-muted text-press-ui mb-2">
-      "{partTitle}" contains {childChapterCount}
-      {chapterLabel.toLowerCase()}{childChapterCount !== 1 ? "s" : ""}.
+      {t('"{title}" contains {count} {type}.', {
+        title: partTitle,
+        count: childChapterCount,
+        type: t(chapterLabel),
+      })}
     </p>
-    <p class="text-press-muted text-press-ui mb-6">What would you like to do?</p>
+    <p class="text-press-muted text-press-ui mb-6">{t("What would you like to do?")}</p>
 
     <div class="space-y-3 mb-6">
       <button
@@ -54,10 +59,14 @@
         onclick={onDeletePartOnly}
         class="w-full text-left px-4 py-3 bg-press-sunken rounded-lg hover:bg-press-sunken transition-colors border border-transparent hover:border-press-accent"
       >
-        <div class="font-medium text-press-text">Delete {partLabel} only</div>
+        <div class="font-medium text-press-text">
+          {t("Delete {type} only", { type: t(partLabel) })}
+        </div>
         <div class="text-press-eyebrow text-press-muted mt-1">
-          The {childChapterCount}
-          {chapterLabel.toLowerCase()}{childChapterCount !== 1 ? "s" : ""} will remain in the project
+          {t("The {count} {type} will remain in the project", {
+            count: childChapterCount,
+            type: t(chapterLabel),
+          })}
         </div>
       </button>
 
@@ -67,11 +76,17 @@
         class="w-full text-left px-4 py-3 bg-press-error-wash rounded-lg hover:bg-press-error-wash transition-colors border border-press-error"
       >
         <div class="font-medium text-press-error">
-          Delete {partLabel} and all {chapterLabel.toLowerCase()}s
+          {t("Delete {part} and all {chapters}", {
+            part: t(partLabel),
+            chapters: t(chapterLabel),
+          })}
         </div>
         <div class="text-press-eyebrow text-press-error mt-1">
-          This will permanently delete the {partLabel} and its {childChapterCount}
-          {chapterLabel.toLowerCase()}{childChapterCount !== 1 ? "s" : ""}
+          {t("This will permanently delete the {part} and its {count} {chapters}", {
+            part: t(partLabel),
+            count: childChapterCount,
+            chapters: t(chapterLabel),
+          })}
         </div>
       </button>
     </div>
@@ -82,7 +97,7 @@
         onclick={onCancel}
         class="px-4 py-2 bg-press-sunken rounded hover:bg-press-sunken transition-colors text-press-text"
       >
-        Cancel
+        {t("Cancel")}
       </button>
     </div>
   </div>

@@ -4,6 +4,7 @@
   import { BookOpen, ChevronDown, ChevronRight, Layout, Loader2, X } from "lucide-svelte";
   import type { ProjectType, StoryTemplate } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     projectType = "novel",
@@ -84,14 +85,14 @@
   >
     <div class="flex items-center justify-between px-4 py-3 border-b border-press-border shrink-0">
       <h2 id="template-browser-title" class="text-press-body-lg font-medium text-press-text">
-        Story Structure Templates
+        {t("Story Structure Templates")}
       </h2>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="template-close"
         >
           <X class="w-5 h-5" />
@@ -105,7 +106,7 @@
           <Loader2 class="w-6 h-6 animate-spin text-press-muted" />
         </div>
       {:else if filteredTemplates.length === 0}
-        <p class="text-press-muted text-center py-8">No templates available.</p>
+        <p class="text-press-muted text-center py-8">{t("No templates available.")}</p>
       {:else}
         <div class="space-y-2">
           {#each filteredTemplates as template}
@@ -138,7 +139,7 @@
                     <div class="flex items-center gap-2">
                       <span class="font-medium text-press-text">{template.name}</span>
                       <span class="text-press-eyebrow text-press-muted"
-                        >{totalBeats(template)} beats</span
+                        >{totalBeats(template)} {t("beats")}</span
                       >
                       {#if template.source}
                         <span class="text-press-eyebrow text-press-muted">· {template.source}</span>
@@ -189,7 +190,7 @@
 
     <div class="flex items-center justify-between px-4 py-3 border-t border-press-border shrink-0">
       <p class="text-press-eyebrow text-press-muted">
-        {filteredTemplates.length} template{filteredTemplates.length !== 1 ? "s" : ""} available
+        {t("{count} templates available", { count: filteredTemplates.length })}
       </p>
       <div class="flex items-center gap-2">
         <button
@@ -197,7 +198,7 @@
           onclick={onClose}
           class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           type="button"
@@ -205,7 +206,7 @@
           disabled={!selectedTemplate}
           class="px-4 py-2 text-press-ui bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
         >
-          Use Template
+          {t("Use Template")}
         </button>
       </div>
     </div>

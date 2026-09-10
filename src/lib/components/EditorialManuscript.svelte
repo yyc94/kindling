@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import ProseToolbar from "./ProseToolbar.svelte";
+  import { t } from "../i18n.svelte";
   import { MessageSquare } from "lucide-svelte";
   import type { Snippet } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
@@ -221,7 +222,7 @@
         },
         attributes: {
           class: "editorial-prose",
-          "aria-label": readonly ? "Current manuscript" : "Manuscript with suggested edits",
+          "aria-label": t(readonly ? "Current manuscript" : "Manuscript with suggested edits"),
           spellcheck: "true",
         },
         handleKeyDown: (_view, event) => {
@@ -264,12 +265,12 @@
           try {
             normalizeOwnership(tr.doc, sources);
             if (protectLocked && lockedProseChanged(tr.before, tr.doc, lockSources ?? sources)) {
-              onError("Unlock this scene before suggesting changes to its prose.");
+              onError(t("Unlock this scene before suggesting changes to its prose."));
               return false;
             }
             return true;
           } catch {
-            onError("To move this passage, cut and paste it at the destination.");
+            onError(t("To move this passage, cut and paste it at the destination."));
             return false;
           }
         },
@@ -408,7 +409,9 @@
             marker.type = "button";
             marker.contentEditable = "false";
             marker.textContent = String(annotations.length);
-            marker.title = `${annotations.length} comments or changes in this paragraph`;
+            marker.title = t("{count} comments or changes in this paragraph", {
+              count: annotations.length,
+            });
             marker.setAttribute("aria-label", marker.title);
             marker.setAttribute("aria-pressed", String(annotations.some((c) => c.id === selected)));
             marker.onmousedown = (event) => event.preventDefault();
@@ -438,7 +441,7 @@
   <ProseToolbar {editor} {revision} {readonly}>
     {@render toolbar?.()}
     {#if canComment}<button class="comment-action" onclick={onComment}
-        ><MessageSquare size={16} /> Comment</button
+        ><MessageSquare size={16} /> {t("Comment")}</button
       >{/if}
   </ProseToolbar>
 </div>

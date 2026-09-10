@@ -28,7 +28,9 @@
     Location,
   } from "../types";
   import { currentProject } from "../stores/project.svelte";
+  import { ui } from "../stores/ui.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let { onClose }: { onClose: () => void } = $props();
 
@@ -66,14 +68,14 @@
       });
       snapshots = items;
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to load snapshots";
+      error = e instanceof Error ? e.message : t("Failed to load snapshots");
     } finally {
       loading = false;
     }
   }
 
   function openCreateDialog() {
-    newSnapshotName = `Snapshot ${new Date().toLocaleDateString()}`;
+    newSnapshotName = t("Snapshot {date}", { date: new Date().toLocaleDateString(ui.locale) });
     newSnapshotDescription = "";
     showCreateDialog = true;
   }
@@ -99,7 +101,7 @@
       snapshots = [snapshot, ...snapshots];
       showCreateDialog = false;
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to create snapshot";
+      error = e instanceof Error ? e.message : t("Failed to create snapshot");
     } finally {
       creating = false;
     }
@@ -108,7 +110,9 @@
   function openRestoreDialog(snapshot: SnapshotMetadata) {
     snapshotToRestore = snapshot;
     restoreMode = "replace_current";
-    newProjectName = `${currentProject.value?.name || "Project"} (Restored)`;
+    newProjectName = t("{name} (Restored)", {
+      name: currentProject.value?.name || t("Project"),
+    });
     showRestoreDialog = true;
   }
 
@@ -155,14 +159,14 @@
       // Close the panel after successful restore
       onClose();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to restore snapshot";
+      error = e instanceof Error ? e.message : t("Failed to restore snapshot");
     } finally {
       restoringId = null;
     }
   }
 
   async function deleteSnapshot(snapshot: SnapshotMetadata) {
-    if (!confirm(`Delete snapshot "${snapshot.name}"? This cannot be undone.`)) {
+    if (!confirm(t('Delete snapshot "{name}"? This cannot be undone.', { name: snapshot.name }))) {
       return;
     }
 
@@ -211,7 +215,7 @@
   // Format date for display
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(ui.locale, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -224,11 +228,11 @@
   function getTriggerLabel(trigger: string): string {
     switch (trigger) {
       case "manual":
-        return "Manual";
+        return t("Manual");
       case "export":
-        return "Export";
+        return t("Export");
       case "auto":
-        return "Auto";
+        return t("Auto");
       default:
         return trigger;
     }
@@ -256,7 +260,7 @@
       <div class="flex items-center gap-3">
         <Clock class="w-6 h-6 text-press-accent-text" />
         <h2 id="snapshots-panel-title" class="text-press-h3 font-semibold text-press-text">
-          Snapshots
+          {t("Snapshots")}
         </h2>
       </div>
       <div class="flex items-center gap-3">
@@ -268,14 +272,14 @@
           class="flex items-center gap-2 px-4 py-2 text-press-ui font-medium bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
         >
           <Plus class="w-4 h-4" />
-          <span>Create Snapshot</span>
+          <span>{t("Create Snapshot")}</span>
         </button>
-        <Tooltip text="Close" position="left">
+        <Tooltip text={t("Close")} position="left">
           <button
             type="button"
             onclick={onClose}
             class="p-1.5 text-press-muted hover:text-press-text hover:bg-press-sunken rounded-lg transition-colors"
-            aria-label="Close"
+            aria-label={t("Close")}
             data-testid="snapshots-close"
           >
             <X class="w-5 h-5" />
@@ -297,10 +301,13 @@
       {:else if snapshots.length === 0}
         <div class="text-center py-16">
           <Clock class="w-16 h-16 mx-auto text-press-muted mb-4" />
-          <p class="text-press-text text-press-body-lg font-medium">No snapshots yet</p>
+          <p class="text-press-text text-press-body-lg font-medium">
+            {t("No snapshots yet")}
+          </p>
           <p class="text-press-muted text-press-ui mt-2 max-w-sm mx-auto">
-            Snapshots let you save restore points of your project. Create one before making big
-            changes.
+            {t(
+              "Snapshots let you save restore points of your project. Create one before making big changes."
+            )}
           </p>
         </div>
       {:else}
@@ -327,29 +334,29 @@
 
                 <!-- Actions -->
                 <div class="flex items-center gap-1 flex-shrink-0">
-                  <Tooltip text="Restore snapshot" position="top">
+                  <Tooltip text={t("Restore snapshot")} position="top">
                     <button
                       type="button"
                       onclick={() => openRestoreDialog(snapshot)}
                       disabled={restoringId === snapshot.id || deletingId === snapshot.id}
                       class="flex items-center gap-1.5 px-3 py-1.5 text-press-ui text-press-accent-text hover:bg-press-accent-wash rounded-lg transition-colors"
-                      aria-label="Restore snapshot"
+                      aria-label={t("Restore snapshot")}
                     >
                       {#if restoringId === snapshot.id}
                         <Loader2 class="w-4 h-4 animate-spin" />
                       {:else}
                         <RotateCcw class="w-4 h-4" />
                       {/if}
-                      <span>Restore</span>
+                      <span>{t("Restore")}</span>
                     </button>
                   </Tooltip>
-                  <Tooltip text="Delete snapshot" position="top">
+                  <Tooltip text={t("Delete snapshot")} position="top">
                     <button
                       type="button"
                       onclick={() => deleteSnapshot(snapshot)}
                       disabled={restoringId === snapshot.id || deletingId === snapshot.id}
                       class="p-1.5 text-press-muted hover:text-press-error hover:bg-press-error-wash rounded-lg transition-colors"
-                      aria-label="Delete snapshot"
+                      aria-label={t("Delete snapshot")}
                     >
                       {#if deletingId === snapshot.id}
                         <Loader2 class="w-4 h-4 animate-spin" />
@@ -372,19 +379,19 @@
                   <span>{formatFileSize(snapshot.file_size)}</span>
                 </div>
                 <div class="flex items-center gap-4 ml-auto">
-                  <Tooltip text="Chapters" position="top">
+                  <Tooltip text={t("Chapters")} position="top">
                     <div class="flex items-center gap-1">
                       <Book class="w-3.5 h-3.5" />
                       <span>{snapshot.chapter_count}</span>
                     </div>
                   </Tooltip>
-                  <Tooltip text="Scenes" position="top">
+                  <Tooltip text={t("Scenes")} position="top">
                     <div class="flex items-center gap-1">
                       <FileText class="w-3.5 h-3.5" />
                       <span>{snapshot.scene_count}</span>
                     </div>
                   </Tooltip>
-                  <Tooltip text="Beats" position="top">
+                  <Tooltip text={t("Beats")} position="top">
                     <div class="flex items-center gap-1">
                       <ListChecks class="w-3.5 h-3.5" />
                       <span>{snapshot.beat_count}</span>
@@ -413,7 +420,9 @@
         class="app-dialog-surface bg-press-surface rounded-lg shadow-press-overlay w-full max-w-md mx-4 overflow-hidden"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
-          <h3 class="text-press-body-lg font-medium text-press-text">Create Snapshot</h3>
+          <h3 class="text-press-body-lg font-medium text-press-text">
+            {t("Create Snapshot")}
+          </h3>
           <button
             type="button"
             onclick={() => (showCreateDialog = false)}
@@ -428,13 +437,13 @@
               for="snapshot-name"
               class="block text-press-ui font-medium text-press-muted mb-2"
             >
-              Name
+              {t("Name")}
             </label>
             <input
               id="snapshot-name"
               type="text"
               bind:value={newSnapshotName}
-              placeholder="Enter snapshot name..."
+              placeholder={t("Enter snapshot name...")}
               class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
             />
           </div>
@@ -443,12 +452,12 @@
               for="snapshot-description"
               class="block text-press-ui font-medium text-press-muted mb-2"
             >
-              Description (optional)
+              {t("Description (optional)")}
             </label>
             <textarea
               id="snapshot-description"
               bind:value={newSnapshotDescription}
-              placeholder="Enter a description..."
+              placeholder={t("Enter a description...")}
               rows="2"
               class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent resize-none"
             ></textarea>
@@ -460,7 +469,7 @@
             onclick={() => (showCreateDialog = false)}
             class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             data-testid="snapshot-confirm-create"
@@ -471,9 +480,9 @@
           >
             {#if creating}
               <Loader2 class="w-4 h-4 animate-spin" />
-              Creating...
+              {t("Creating...")}
             {:else}
-              Create Snapshot
+              {t("Create Snapshot")}
             {/if}
           </button>
         </div>
@@ -495,7 +504,9 @@
         class="app-dialog-surface bg-press-surface rounded-lg shadow-press-overlay w-full max-w-md mx-4 overflow-hidden"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-press-border">
-          <h3 class="text-press-body-lg font-medium text-press-text">Restore Snapshot</h3>
+          <h3 class="text-press-body-lg font-medium text-press-text">
+            {t("Restore Snapshot")}
+          </h3>
           <button
             type="button"
             onclick={() => (showRestoreDialog = false)}
@@ -506,12 +517,12 @@
         </div>
         <div class="p-4 space-y-4">
           <p class="text-press-muted">
-            Restore snapshot <strong class="text-press-text">"{snapshotToRestore.name}"</strong>?
+            {t('Restore snapshot "{name}"?', { name: snapshotToRestore.name })}
           </p>
 
           <fieldset>
             <legend class="block text-press-ui font-medium text-press-muted mb-2"
-              >Restore Mode</legend
+              >{t("Restore Mode")}</legend
             >
             <div class="space-y-2">
               <label class="flex items-start gap-2 cursor-pointer">
@@ -523,9 +534,9 @@
                   class="mt-1 w-4 h-4 text-press-accent-text bg-press-sunken border-press-border focus:ring-press-focus"
                 />
                 <div>
-                  <span class="text-press-text">Replace current project</span>
+                  <span class="text-press-text">{t("Replace current project")}</span>
                   <p class="text-press-eyebrow text-press-muted">
-                    Overwrite current project data with the snapshot
+                    {t("Overwrite current project data with the snapshot")}
                   </p>
                 </div>
               </label>
@@ -538,9 +549,9 @@
                   class="mt-1 w-4 h-4 text-press-accent-text bg-press-sunken border-press-border focus:ring-press-focus"
                 />
                 <div>
-                  <span class="text-press-text">Create new project</span>
+                  <span class="text-press-text">{t("Create new project")}</span>
                   <p class="text-press-eyebrow text-press-muted">
-                    Create a copy of the project from this snapshot
+                    {t("Create a copy of the project from this snapshot")}
                   </p>
                 </div>
               </label>
@@ -553,13 +564,13 @@
                 for="new-project-name"
                 class="block text-press-ui font-medium text-press-muted mb-2"
               >
-                New Project Name
+                {t("New Project Name")}
               </label>
               <input
                 id="new-project-name"
                 type="text"
                 bind:value={newProjectName}
-                placeholder="Enter project name..."
+                placeholder={t("Enter project name...")}
                 class="w-full bg-press-sunken text-press-text border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
               />
             </div>
@@ -567,8 +578,9 @@
 
           {#if restoreMode === "replace_current"}
             <p class="text-press-ui text-press-warning">
-              Warning: This will replace all current project data. Consider creating a snapshot
-              first if you want to preserve the current state.
+              {t(
+                "Warning: This will replace all current project data. Consider creating a snapshot first if you want to preserve the current state."
+              )}
             </p>
           {/if}
         </div>
@@ -578,7 +590,7 @@
             onclick={() => (showRestoreDialog = false)}
             class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
@@ -589,9 +601,9 @@
           >
             {#if restoringId}
               <Loader2 class="w-4 h-4 animate-spin" />
-              Restoring...
+              {t("Restoring...")}
             {:else}
-              Restore
+              {t("Restore")}
             {/if}
           </button>
         </div>

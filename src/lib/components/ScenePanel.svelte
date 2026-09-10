@@ -48,6 +48,7 @@
   import SluglineInput from "./SluglineInput.svelte";
   import TagSelector from "./TagSelector.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     onOpenEditorial,
@@ -70,7 +71,7 @@
     try {
       await prepareForSearch();
       if (proseSaves.draftsForRecovery(project.id).length)
-        throw new Error("Save or recover unsaved prose before opening Revisions.");
+        throw new Error(t("Save or recover unsaved prose before opening Revisions."));
       if (currentProject.currentScene?.id !== scene.id) return;
       const anchor = window
         .getSelection()
@@ -237,7 +238,8 @@
     } catch (e) {
       if (requestId !== sceneReferenceRequestId) return;
       console.error("Failed to load scene reference items:", e);
-      sceneReferenceError = e instanceof Error ? e.message : "Failed to load scene reference items";
+      sceneReferenceError =
+        e instanceof Error ? e.message : t("Failed to load scene reference items");
       sceneReferenceItems = {} as Record<ReferenceTypeId, ReferenceItem[]>;
     } finally {
       if (requestId === sceneReferenceRequestId) {
@@ -282,7 +284,7 @@
         scene_status: nextStatus,
       });
     } catch (e) {
-      metadataError = e instanceof Error ? e.message : "Failed to update scene metadata";
+      metadataError = e instanceof Error ? e.message : t("Failed to update scene metadata");
     } finally {
       metadataSaving = false;
     }
@@ -311,7 +313,7 @@
       });
       currentProject.updateScene(scene.id, { planning_status: nextStatus });
     } catch (e) {
-      metadataError = e instanceof Error ? e.message : "Failed to update planning status";
+      metadataError = e instanceof Error ? e.message : t("Failed to update planning status");
     } finally {
       metadataSaving = false;
     }
@@ -620,7 +622,7 @@
       }
     } catch (e) {
       console.error("Failed to switch editor mode:", e);
-      ui.showError(`Failed to switch editor mode: ${String(e)}`);
+      ui.showError(t("Failed to switch editor mode: {error}", { error: String(e) }));
     } finally {
       switchingMode = false;
     }
@@ -702,7 +704,7 @@
     const freshScene = scenes.find((s) => s.id === scene?.id);
     const beats = freshScene ? await invoke<Beat[]>("get_beats", { sceneId: freshScene.id }) : [];
     if (currentProject.value?.id !== projectId || currentProject.currentScene?.id !== scene?.id) {
-      throw new Error("The selected project or scene changed. Reopen Find and Replace.");
+      throw new Error(t("The selected project or scene changed. Reopen Find and Replace."));
     }
     await proseSaves.discard(drafts, () => draftView?.discardFailedDrafts(drafts));
     if (currentProject.value?.id !== projectId || currentProject.currentScene?.id !== scene?.id)
@@ -803,7 +805,7 @@
               class="flex items-center gap-2 py-1 text-press-ui font-press-ui text-press-muted hover:text-press-text"
             >
               <History class="w-4 h-4" strokeWidth={1} aria-hidden="true" />
-              {openingRevisions ? "Opening revisions…" : "Revisions"}
+              {t(openingRevisions ? "Opening revisions…" : "Revisions")}
             </button>
           {/snippet}
         </Previously>
@@ -831,7 +833,7 @@
                 class="flex items-center gap-1 px-2 py-1 bg-press-warning-wash text-press-warning rounded-lg text-press-ui"
               >
                 <Lock class="w-4 h-4" />
-                Locked
+                {t("Locked")}
               </span>
             {/if}
           </div>
@@ -842,12 +844,15 @@
           {/if}
           {#if isScreenplay && scenePageEstimate !== null}
             <span class="text-press-eyebrow text-press-muted mt-1">
-              ~{scenePageEstimate.toFixed(1)} pg
+              ~{scenePageEstimate.toFixed(1)}
+              {t("pg")}
             </span>
           {/if}
           <div class="mt-4 flex flex-wrap gap-4">
             <div class="flex flex-col gap-1">
-              <label for="scene-type" class="text-press-eyebrow text-press-muted">Scene type</label>
+              <label for="scene-type" class="text-press-eyebrow text-press-muted"
+                >{t("Scene type")}</label
+              >
               <div class="relative">
                 <select
                   id="scene-type"
@@ -857,7 +862,7 @@
                   disabled={isLocked || metadataSaving}
                 >
                   {#each sceneTypeOptions as option (option.value)}
-                    <option value={option.value}>{option.label}</option>
+                    <option value={option.value}>{t(option.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -866,7 +871,9 @@
               </div>
             </div>
             <div class="flex flex-col gap-1">
-              <label for="scene-status" class="text-press-eyebrow text-press-muted">Status</label>
+              <label for="scene-status" class="text-press-eyebrow text-press-muted"
+                >{t("Status")}</label
+              >
               <div class="relative">
                 <select
                   id="scene-status"
@@ -876,7 +883,7 @@
                   disabled={isLocked || metadataSaving}
                 >
                   {#each sceneStatusOptions as option (option.value)}
-                    <option value={option.value}>{option.label}</option>
+                    <option value={option.value}>{t(option.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -886,14 +893,14 @@
             </div>
             <div class="flex flex-col gap-1">
               <Tooltip
-                text="Controls how much structure this scene has: Undefined → Flexible → Fixed"
+                text={t("Controls how much structure this scene has: Undefined → Flexible → Fixed")}
                 position="top"
               >
                 <label
                   for="planning-status"
                   class="text-press-eyebrow text-press-muted cursor-help flex items-center gap-1"
                 >
-                  Planning
+                  {t("Planning")}
                   <Info class="w-3 h-3 text-press-muted" />
                 </label>
               </Tooltip>
@@ -906,7 +913,7 @@
                   disabled={isLocked || metadataSaving}
                 >
                   {#each planningStatusOptions as option (option.value)}
-                    <option value={option.value}>{option.label}</option>
+                    <option value={option.value}>{t(option.label)}</option>
                   {/each}
                 </select>
                 <ChevronDown
@@ -917,9 +924,9 @@
           </div>
           {#if (scene.planning_status ?? "fixed") === "fixed"}
             <div class="flex flex-col gap-1">
-              <span class="text-press-eyebrow text-press-muted">View</span>
+              <span class="text-press-eyebrow text-press-muted">{t("View")}</span>
               <div class="flex bg-press-sunken rounded-lg p-0.5">
-                <Tooltip text="Beat cards" position="top">
+                <Tooltip text={t("Beat cards")} position="top">
                   <button
                     data-testid="view-beats"
                     onclick={() => switchEditorMode("beat")}
@@ -930,10 +937,10 @@
                       : 'text-press-muted hover:text-press-text'}"
                   >
                     <LayoutGrid class="w-3.5 h-3.5" />
-                    Beats
+                    {t("Beats")}
                   </button>
                 </Tooltip>
-                <Tooltip text="Full page prose" position="top">
+                <Tooltip text={t("Full page prose")} position="top">
                   <button
                     data-testid="view-page"
                     onclick={() => switchEditorMode("page")}
@@ -944,7 +951,7 @@
                       : 'text-press-muted hover:text-press-text'}"
                   >
                     <AlignLeft class="w-3.5 h-3.5" />
-                    Page
+                    {t("Page")}
                   </button>
                 </Tooltip>
               </div>
@@ -958,7 +965,7 @@
         <!-- Scene tags -->
         {#if currentProject.value}
           <div class="mb-4 flex items-center gap-2">
-            <span class="text-press-eyebrow text-press-muted shrink-0">Tags</span>
+            <span class="text-press-eyebrow text-press-muted shrink-0">{t("Tags")}</span>
             <TagSelector
               projectId={currentProject.value.id}
               entityType="scene"
@@ -977,40 +984,45 @@
               <Lightbulb class="w-4 h-4 text-press-accent-text shrink-0 mt-0.5" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                  <p class="text-press-ui font-medium text-press-text">Rolling outline</p>
+                  <p class="text-press-ui font-medium text-press-text">{t("Rolling outline")}</p>
                   <button
                     onclick={() => ui.markTooltipSeen("planningStatus")}
                     class="p-0.5 text-press-muted hover:text-press-text rounded transition-colors shrink-0"
-                    aria-label="Dismiss"
+                    aria-label={t("Dismiss")}
                   >
                     <X class="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <p class="text-press-eyebrow text-press-muted leading-relaxed mt-1 mb-2.5">
-                  The <strong class="text-press-text">Planning</strong> dropdown above controls how much
-                  structure this scene has. Use it to work through your story gradually:
+                  {t("The")}
+                  <strong class="text-press-text">{t("Planning")}</strong>
+                  {t(
+                    "dropdown above controls how much structure this scene has. Use it to work through your story gradually:"
+                  )}
                 </p>
                 <div class="grid grid-cols-3 gap-3">
                   <div class="text-press-eyebrow">
                     <span class="font-medium text-press-muted flex items-center gap-1"
-                      ><CircleDashed class="w-3 h-3" /> Undefined</span
+                      ><CircleDashed class="w-3 h-3" /> {t("Undefined")}</span
                     >
                     <p class="text-press-muted mt-0.5">
-                      A placeholder — you know it exists but haven't planned it.
+                      {t("A placeholder — you know it exists but haven't planned it.")}
                     </p>
                   </div>
                   <div class="text-press-eyebrow">
                     <span class="font-medium text-press-warning flex items-center gap-1"
-                      ><CircleDot class="w-3 h-3" /> Flexible</span
+                      ><CircleDot class="w-3 h-3" /> {t("Flexible")}</span
                     >
                     <p class="text-press-muted mt-0.5">
-                      You have the gist — a synopsis and rough direction.
+                      {t("You have the gist — a synopsis and rough direction.")}
                     </p>
                   </div>
                   <div class="text-press-eyebrow">
-                    <span class="font-medium text-press-text flex items-center gap-1">Fixed</span>
+                    <span class="font-medium text-press-text flex items-center gap-1"
+                      >{t("Fixed")}</span
+                    >
                     <p class="text-press-muted mt-0.5">
-                      Full structure with beats, references, and notes.
+                      {t("Full structure with beats, references, and notes.")}
                     </p>
                   </div>
                 </div>
@@ -1031,13 +1043,16 @@
                 <CircleDashed class="w-4 h-4 text-press-muted" />
               </div>
               <div>
-                <h3 class="text-press-ui font-medium text-press-text mb-1">Undefined scene</h3>
+                <h3 class="text-press-ui font-medium text-press-text mb-1">
+                  {t("Undefined scene")}
+                </h3>
                 <p class="text-press-muted text-press-ui mb-1">
-                  This is a placeholder — you know it exists but haven't planned it yet.
+                  {t("This is a placeholder — you know it exists but haven't planned it yet.")}
                 </p>
                 <p class="text-press-muted text-press-eyebrow mb-3">
-                  Add a synopsis above to capture the gist, then promote it when you're ready to
-                  flesh it out.
+                  {t(
+                    "Add a synopsis above to capture the gist, then promote it when you're ready to flesh it out."
+                  )}
                 </p>
                 {#if !isLocked}
                   <div class="flex items-center gap-2">
@@ -1045,13 +1060,13 @@
                       onclick={() => setScenePlanningStatus(scene, "flexible")}
                       class="px-3 py-1.5 rounded-md bg-press-accent-wash text-press-accent-text text-press-ui font-medium hover:text-press-text transition-colors"
                     >
-                      Switch to Flexible
+                      {t("Switch to Flexible")}
                     </button>
                     <button
                       onclick={() => setScenePlanningStatus(scene, "fixed")}
                       class="px-3 py-1.5 rounded-md text-press-muted text-press-ui hover:text-press-text hover:bg-press-sunken transition-colors"
                     >
-                      Go straight to Fixed
+                      {t("Go straight to Fixed")}
                     </button>
                   </div>
                 {/if}
@@ -1070,20 +1085,23 @@
                 <CircleDot class="w-4 h-4 text-press-warning" />
               </div>
               <div>
-                <h3 class="text-press-ui font-medium text-press-text mb-1">Flexible scene</h3>
+                <h3 class="text-press-ui font-medium text-press-text mb-1">
+                  {t("Flexible scene")}
+                </h3>
                 <p class="text-press-muted text-press-ui mb-1">
-                  You have an idea for this scene but haven't locked down the structure.
+                  {t("You have an idea for this scene but haven't locked down the structure.")}
                 </p>
                 <p class="text-press-muted text-press-eyebrow mb-3">
-                  Use the synopsis to capture your intent. When you're ready to break it into beats,
-                  switch to Fixed.
+                  {t(
+                    "Use the synopsis to capture your intent. When you're ready to break it into beats, switch to Fixed."
+                  )}
                 </p>
                 {#if !isLocked}
                   <button
                     onclick={() => setScenePlanningStatus(scene, "fixed")}
                     class="px-3 py-1.5 rounded-md bg-press-accent-wash text-press-accent-text text-press-ui font-medium hover:text-press-text transition-colors"
                   >
-                    Define beats
+                    {t("Define beats")}
                   </button>
                 {/if}
               </div>
@@ -1096,13 +1114,13 @@
           <div class="mb-8 px-4 py-3 bg-press-warning-wash border border-press-warning rounded-lg">
             <div class="flex items-center gap-2 text-press-warning">
               <Lock class="w-4 h-4" />
-              <span class="font-medium">This scene is locked</span>
+              <span class="font-medium">{t("This scene is locked")}</span>
             </div>
             <p class="text-press-muted text-press-ui mt-1">
               {#if currentProject.currentChapter?.locked}
-                The parent chapter is locked. Unlock the chapter to edit this scene.
+                {t("The parent chapter is locked. Unlock the chapter to edit this scene.")}
               {:else}
-                Unlock this scene from the sidebar to make changes.
+                {t("Unlock this scene from the sidebar to make changes.")}
               {/if}
             </p>
           </div>
@@ -1112,14 +1130,14 @@
         <section class="mb-8">
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">
-              Synopsis
+              {t("Synopsis")}
             </h2>
             {#if synopsis && !editingSynopsis && !isLocked}
-              <Tooltip text="Edit synopsis" position="left">
+              <Tooltip text={t("Edit synopsis")} position="left">
                 <button
                   onclick={startEditingSynopsis}
                   class="text-press-muted hover:text-press-text transition-colors p-1"
-                  aria-label="Edit synopsis"
+                  aria-label={t("Edit synopsis")}
                 >
                   <Pencil class="w-3.5 h-3.5" />
                 </button>
@@ -1130,19 +1148,19 @@
             <div class="relative">
               <textarea
                 class="w-full min-h-[100px] bg-press-sunken rounded-lg p-4 text-press-text font-prose italic leading-relaxed resize-y border border-press-accent focus:outline-none"
-                placeholder="Write a brief synopsis for this scene..."
+                placeholder={t("Write a brief synopsis for this scene...")}
                 bind:value={synopsisText}
                 oninput={(e) => handleSynopsisInput(e.currentTarget.value)}
               ></textarea>
               {#if synopsisSave.saving}
                 <div class="absolute bottom-3 right-3 flex items-center gap-1.5 text-press-muted">
                   <Loader2 class="w-3.5 h-3.5 animate-spin" />
-                  <span class="text-press-eyebrow">Saving...</span>
+                  <span class="text-press-eyebrow">{t("Saving...")}</span>
                 </div>
               {/if}
             </div>
             <p class="text-press-muted text-press-eyebrow mt-2">
-              Press Escape to close. Changes are saved automatically.
+              {t("Press Escape to close. Changes are saved automatically.")}
             </p>
           {:else if synopsis}
             <div class="bg-press-surface rounded-lg p-4 border-l-2 border-press-accent">
@@ -1156,28 +1174,34 @@
               class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-press-border text-press-muted hover:text-press-text hover:border-press-accent transition-colors"
             >
               <Plus class="w-4 h-4" />
-              <span class="text-press-ui">Add Synopsis</span>
+              <span class="text-press-ui">{t("Add Synopsis")}</span>
             </button>
           {:else}
             <div
               class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-press-border text-press-muted"
             >
               <Lock class="w-4 h-4" />
-              <span class="text-press-ui">Scene is locked</span>
+              <span class="text-press-ui">{t("Scene is locked")}</span>
             </div>
           {/if}
           {#if synopsisSave.error}
             <div role="alert" class="mt-2 text-press-ui text-press-error">
-              <p>Synopsis not saved: {synopsisSave.error}. Your draft is kept for retry.</p>
+              <p>
+                {t("Synopsis not saved: {error}. Your draft is kept for retry.", {
+                  error: synopsisSave.error,
+                })}
+              </p>
               <button
                 onclick={flushSynopsisSave}
                 disabled={synopsisSave.saving}
                 class="underline mt-1 disabled:opacity-50"
-                aria-label="Retry synopsis save">Retry saving</button
+                aria-label={t("Retry synopsis save")}>{t("Retry saving")}</button
               >
             </div>
           {:else if synopsisSave.draft && !synopsisSave.saving}
-            <p role="status" class="mt-2 text-press-eyebrow text-press-muted">Unsaved changes</p>
+            <p role="status" class="mt-2 text-press-eyebrow text-press-muted">
+              {t("Unsaved changes")}
+            </p>
           {/if}
         </section>
 
@@ -1186,10 +1210,10 @@
           <section class="mb-8">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">
-                References
+                {t("References")}
               </h2>
               {#if sceneReferenceLoading}
-                <span class="text-press-eyebrow text-press-muted">Loading…</span>
+                <span class="text-press-eyebrow text-press-muted">{t("Loading…")}</span>
               {/if}
             </div>
             {#if sceneReferenceError}
@@ -1207,7 +1231,7 @@
                       <div>
                         <div class="flex items-center gap-2 text-press-eyebrow text-press-muted">
                           <Icon class={`w-3.5 h-3.5 ${option.accentClass}`} />
-                          <span class="font-medium">{option.label}</span>
+                          <span class="font-medium">{t(option.label)}</span>
                         </div>
                         <div class="mt-2 flex flex-wrap gap-2">
                           {#each items as item (item.id)}
@@ -1223,7 +1247,9 @@
                   {/each}
                 </div>
               {:else if !sceneReferenceLoading}
-                <div class="text-press-ui text-press-muted">No linked reference notes.</div>
+                <div class="text-press-ui text-press-muted">
+                  {t("No linked reference notes.")}
+                </div>
               {/if}
             {/if}
           </section>
@@ -1240,15 +1266,15 @@
               <h2
                 class="text-press-ui font-semibold text-press-text uppercase tracking-wide group-hover:text-press-text transition-colors"
               >
-                Discovery Notes
+                {t("Discovery Notes")}
               </h2>
               <span class="text-press-eyebrow text-press-muted">
-                {discoveryNotesVisible ? "Hide" : "Show"} (⌘D)
+                {t(discoveryNotesVisible ? "Hide" : "Show")} (⌘D)
               </span>
             </button>
             {#if discoveryNotesVisible}
               {#if discoveryNotesLoading}
-                <p class="text-press-ui text-press-muted">Loading…</p>
+                <p class="text-press-ui text-press-muted">{t("Loading…")}</p>
               {:else}
                 <div class="space-y-3">
                   {#if !addingDiscoveryNote && !isLocked}
@@ -1258,14 +1284,14 @@
                       class="flex items-center gap-1 text-press-muted hover:text-press-text transition-colors text-press-ui"
                     >
                       <Plus class="w-3.5 h-3.5" />
-                      <span>Add note</span>
+                      <span>{t("Add note")}</span>
                     </button>
                   {/if}
                   {#if addingDiscoveryNote}
                     <div class="flex flex-col gap-2 p-3 rounded-lg bg-press-surface">
                       <textarea
                         bind:value={newDiscoveryNoteContent}
-                        placeholder="What did you discover?"
+                        placeholder={t("What did you discover?")}
                         rows="2"
                         class="w-full px-3 py-2 rounded-md bg-press-sunken text-press-text text-press-ui placeholder:text-press-muted resize-none focus:outline-none focus:ring-2 focus:ring-press-focus"
                       ></textarea>
@@ -1276,7 +1302,7 @@
                           disabled={!newDiscoveryNoteContent.trim() || creatingDiscoveryNote}
                           class="px-3 py-1.5 rounded-md bg-press-accent text-press-on-accent text-press-ui font-medium"
                         >
-                          {creatingDiscoveryNote ? "Adding…" : "Add"}
+                          {t(creatingDiscoveryNote ? "Adding…" : "Add")}
                         </button>
                         <button
                           type="button"
@@ -1286,7 +1312,7 @@
                           }}
                           class="px-3 py-1.5 rounded-md bg-press-sunken text-press-muted text-press-ui hover:text-press-text"
                         >
-                          Cancel
+                          {t("Cancel")}
                         </button>
                       </div>
                     </div>
@@ -1307,7 +1333,7 @@
                               updateDiscoveryNote(note.id, editingDiscoveryNoteContent)}
                             class="px-3 py-1.5 rounded-md bg-press-accent text-press-on-accent text-press-ui font-medium"
                           >
-                            Save
+                            {t("Save")}
                           </button>
                           <button
                             type="button"
@@ -1317,7 +1343,7 @@
                             }}
                             class="px-3 py-1.5 rounded-md bg-press-sunken text-press-muted text-press-ui hover:text-press-text"
                           >
-                            Cancel
+                            {t("Cancel")}
                           </button>
                         </div>
                       {:else}
@@ -1346,14 +1372,14 @@
                             }}
                             class="text-press-eyebrow text-press-muted hover:text-press-text"
                           >
-                            Edit
+                            {t("Edit")}
                           </button>
                           <button
                             type="button"
                             onclick={() => deleteDiscoveryNote(note.id)}
                             class="text-press-eyebrow text-press-muted hover:text-press-error"
                           >
-                            Delete
+                            {t("Delete")}
                           </button>
                           <button
                             type="button"
@@ -1361,14 +1387,16 @@
                             disabled={promotingNoteId === note.id}
                             class="text-press-eyebrow text-press-muted hover:text-press-accent-text"
                           >
-                            {promotingNoteId === note.id ? "Promoting…" : "Promote to beat"}
+                            {t(promotingNoteId === note.id ? "Promoting…" : "Promote to beat")}
                           </button>
                         </div>
                       {/if}
                     </div>
                   {/each}
                   {#if discoveryNotes.length === 0 && !addingDiscoveryNote}
-                    <p class="text-press-ui text-press-muted">No discovery notes yet.</p>
+                    <p class="text-press-ui text-press-muted">
+                      {t("No discovery notes yet.")}
+                    </p>
                   {/if}
                 </div>
               {/if}
@@ -1406,7 +1434,7 @@
         {#if (scene.planning_status ?? "fixed") === "fixed" && scene.editor_mode !== "page" && scene.prose && currentProject.beats.length === 0}
           <section class="mt-8">
             <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide mb-4">
-              Content
+              {t("Content")}
             </h2>
             <div class="bg-press-surface rounded-lg p-6">
               <p class="text-press-text font-prose leading-relaxed whitespace-pre-wrap">
@@ -1424,8 +1452,10 @@
       class="flex-1 flex flex-col items-center justify-center text-press-muted"
     >
       <FileText class="w-16 h-16 mb-4 opacity-50" strokeWidth={1.5} />
-      <p class="text-press-body-lg">Select a scene to start writing</p>
-      <p class="text-press-ui mt-1">Choose a scene from the sidebar to view its content</p>
+      <p class="text-press-body-lg">{t("Select a scene to start writing")}</p>
+      <p class="text-press-ui mt-1">
+        {t("Choose a scene from the sidebar to view its content")}
+      </p>
     </div>
   {/if}
   {#key currentProject.value?.id}
@@ -1435,9 +1465,11 @@
 
 {#if showSwitchToBeatConfirm}
   <ConfirmDialog
-    title="Switch to Beat View"
-    message="Any changes made in Page View will be synced back to the corresponding beats. Continue?"
-    confirmLabel="Switch"
+    title={t("Switch to Beat View")}
+    message={t(
+      "Any changes made in Page View will be synced back to the corresponding beats. Continue?"
+    )}
+    confirmLabel={t("Switch")}
     onConfirm={() => {
       showSwitchToBeatConfirm = false;
       doSwitchMode("beat");

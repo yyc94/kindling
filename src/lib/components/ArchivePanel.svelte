@@ -4,6 +4,7 @@
   import type { Chapter, Scene, ArchivedItems } from "../types";
   import { currentProject } from "../stores/project.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let { onClose }: { onClose: () => void } = $props();
 
@@ -31,7 +32,7 @@
       archivedChapters = items.chapters;
       archivedScenes = items.scenes;
     } catch (e) {
-      error = e instanceof Error ? e.message : "Failed to load archived items";
+      error = e instanceof Error ? e.message : t("Failed to load archived items");
     } finally {
       loading = false;
     }
@@ -71,7 +72,9 @@
   }
 
   async function permanentDeleteChapter(chapter: Chapter) {
-    if (!confirm(`Permanently delete "${chapter.title}"? This cannot be undone.`)) {
+    if (
+      !confirm(t('Permanently delete "{title}"? This cannot be undone.', { title: chapter.title }))
+    ) {
       return;
     }
 
@@ -87,7 +90,9 @@
   }
 
   async function permanentDeleteScene(scene: Scene) {
-    if (!confirm(`Permanently delete "${scene.title}"? This cannot be undone.`)) {
+    if (
+      !confirm(t('Permanently delete "{title}"? This cannot be undone.', { title: scene.title }))
+    ) {
       return;
     }
 
@@ -144,14 +149,16 @@
     <div class="flex items-center justify-between px-6 py-4 border-b border-press-border">
       <div class="flex items-center gap-3">
         <Archive class="w-5 h-5 text-press-accent-text" />
-        <h2 id="archive-panel-title" class="text-press-h3 font-medium text-press-text">Archive</h2>
+        <h2 id="archive-panel-title" class="text-press-h3 font-medium text-press-text">
+          {t("Archive")}
+        </h2>
       </div>
-      <Tooltip text="Close" position="left">
+      <Tooltip text={t("Close")} position="left">
         <button
           type="button"
           onclick={onClose}
           class="p-1 text-press-muted hover:text-press-text transition-colors rounded"
-          aria-label="Close"
+          aria-label={t("Close")}
           data-testid="archive-close"
         >
           <X class="w-5 h-5" />
@@ -172,9 +179,9 @@
       {:else if archivedChapters.length === 0 && archivedScenes.length === 0}
         <div class="text-center py-12">
           <Archive class="w-12 h-12 mx-auto text-press-muted mb-4" />
-          <p class="text-press-muted">No archived items</p>
+          <p class="text-press-muted">{t("No archived items")}</p>
           <p class="text-press-muted text-press-ui mt-1">
-            Archived chapters and scenes will appear here
+            {t("Archived chapters and scenes will appear here")}
           </p>
         </div>
       {:else}
@@ -182,7 +189,7 @@
         {#if archivedChapters.length > 0}
           <section class="mb-8">
             <h3 class="text-press-ui font-medium text-press-muted uppercase tracking-wide mb-4">
-              Archived Chapters ({archivedChapters.length})
+              {t("Archived Chapters")} ({archivedChapters.length})
             </h3>
             <div class="space-y-2">
               {#each archivedChapters as chapter (chapter.id)}
@@ -197,7 +204,7 @@
                       onclick={() => restoreChapter(chapter)}
                       disabled={restoringId === chapter.id || deletingId === chapter.id}
                       class="flex items-center gap-1 px-2 py-1 text-press-ui text-press-accent-text hover:text-press-accent-text transition-colors"
-                      title="Restore"
+                      title={t("Restore")}
                       data-testid="archive-restore"
                     >
                       {#if restoringId === chapter.id}
@@ -205,21 +212,21 @@
                       {:else}
                         <RotateCcw class="w-4 h-4" />
                       {/if}
-                      <span>Restore</span>
+                      <span>{t("Restore")}</span>
                     </button>
                     <button
                       type="button"
                       onclick={() => permanentDeleteChapter(chapter)}
                       disabled={restoringId === chapter.id || deletingId === chapter.id}
                       class="flex items-center gap-1 px-2 py-1 text-press-ui text-press-error hover:text-press-error transition-colors"
-                      title="Delete permanently"
+                      title={t("Delete permanently")}
                     >
                       {#if deletingId === chapter.id}
                         <Loader2 class="w-4 h-4 animate-spin" />
                       {:else}
                         <Trash2 class="w-4 h-4" />
                       {/if}
-                      <span>Delete</span>
+                      <span>{t("Delete")}</span>
                     </button>
                   </div>
                 </div>
@@ -232,7 +239,7 @@
         {#if archivedScenes.length > 0}
           <section>
             <h3 class="text-press-ui font-medium text-press-muted uppercase tracking-wide mb-4">
-              Archived Scenes ({archivedScenes.length})
+              {t("Archived Scenes")} ({archivedScenes.length})
             </h3>
             <div class="space-y-2">
               {#each archivedScenes as scene (scene.id)}
@@ -242,7 +249,7 @@
                     <div class="min-w-0">
                       <p class="text-press-text truncate">{scene.title}</p>
                       <p class="text-press-muted text-press-eyebrow truncate">
-                        in {getParentChapterTitle(scene)}
+                        {t("in {chapter}", { chapter: getParentChapterTitle(scene) })}
                       </p>
                     </div>
                   </div>
@@ -252,7 +259,7 @@
                       onclick={() => restoreScene(scene)}
                       disabled={restoringId === scene.id || deletingId === scene.id}
                       class="flex items-center gap-1 px-2 py-1 text-press-ui text-press-accent-text hover:text-press-accent-text transition-colors"
-                      title="Restore"
+                      title={t("Restore")}
                       data-testid="archive-restore"
                     >
                       {#if restoringId === scene.id}
@@ -260,21 +267,21 @@
                       {:else}
                         <RotateCcw class="w-4 h-4" />
                       {/if}
-                      <span>Restore</span>
+                      <span>{t("Restore")}</span>
                     </button>
                     <button
                       type="button"
                       onclick={() => permanentDeleteScene(scene)}
                       disabled={restoringId === scene.id || deletingId === scene.id}
                       class="flex items-center gap-1 px-2 py-1 text-press-ui text-press-error hover:text-press-error transition-colors"
-                      title="Delete permanently"
+                      title={t("Delete permanently")}
                     >
                       {#if deletingId === scene.id}
                         <Loader2 class="w-4 h-4 animate-spin" />
                       {:else}
                         <Trash2 class="w-4 h-4" />
                       {/if}
-                      <span>Delete</span>
+                      <span>{t("Delete")}</span>
                     </button>
                   </div>
                 </div>

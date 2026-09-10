@@ -3,6 +3,7 @@
   import { GripVertical, Pencil, Plus, Trash2, X, Loader2, Check } from "lucide-svelte";
   import type { FieldDefinition, FieldType, FieldEntityType } from "../types";
   import Tooltip from "./Tooltip.svelte";
+  import { t } from "../i18n.svelte";
 
   let {
     projectId,
@@ -164,7 +165,9 @@
 
 <div class="space-y-3">
   <div class="flex items-center justify-between">
-    <h3 class="text-press-ui font-medium text-press-text">{entityLabel} Fields</h3>
+    <h3 class="text-press-ui font-medium text-press-text">
+      {t("{entity} Fields", { entity: entityLabel })}
+    </h3>
     <button
       type="button"
       onclick={openCreateForm}
@@ -172,40 +175,42 @@
       disabled={!!editingDef}
     >
       <Plus class="w-3 h-3" />
-      Add field
+      {t("Add field")}
     </button>
   </div>
 
   {#if loading}
-    <p class="text-press-eyebrow text-press-muted">Loading fields...</p>
+    <p class="text-press-eyebrow text-press-muted">{t("Loading fields...")}</p>
   {:else if error}
     <p class="text-press-eyebrow text-press-error">{error}</p>
   {:else if definitions.length === 0 && !editingDef}
-    <p class="text-press-eyebrow text-press-muted">No custom fields defined yet.</p>
+    <p class="text-press-eyebrow text-press-muted">{t("No custom fields defined yet.")}</p>
   {:else}
     <div class="space-y-1">
       {#each definitions as def}
         <div class="flex items-center gap-2 py-1.5 px-2 bg-press-sunken rounded-lg text-press-ui">
           <GripVertical class="w-3.5 h-3.5 text-press-muted shrink-0" />
           <span class="flex-1 text-press-text truncate">{def.name}</span>
-          <span class="text-press-eyebrow text-press-muted capitalize">{def.field_type}</span>
+          <span class="text-press-eyebrow text-press-muted capitalize">
+            {t(FIELD_TYPES.find((type) => type.value === def.field_type)?.label ?? def.field_type)}
+          </span>
           {#if def.required}
-            <span class="text-press-eyebrow text-press-error">req</span>
+            <span class="text-press-eyebrow text-press-error">{t("req")}</span>
           {/if}
-          <Tooltip text="Edit" position="bottom">
+          <Tooltip text={t("Edit")} position="bottom">
             <button
               onclick={() => openEditForm(def)}
               class="p-1 text-press-muted hover:text-press-text"
-              aria-label="Edit field"
+              aria-label={t("Edit field")}
             >
               <Pencil class="w-3.5 h-3.5" />
             </button>
           </Tooltip>
-          <Tooltip text="Delete" position="bottom">
+          <Tooltip text={t("Delete")} position="bottom">
             <button
               onclick={() => deleteDefinition(def.id)}
               class="p-1 text-press-muted hover:text-press-error"
-              aria-label="Delete field"
+              aria-label={t("Delete field")}
             >
               <Trash2 class="w-3.5 h-3.5" />
             </button>
@@ -219,7 +224,7 @@
     <div class="bg-press-sunken rounded-lg p-3 space-y-3 border border-press-accent">
       <div class="flex items-center justify-between">
         <span class="text-press-ui font-medium text-press-text">
-          {editMode === "create" ? "New Field" : "Edit Field"}
+          {t(editMode === "create" ? "New Field" : "Edit Field")}
         </span>
         <button onclick={cancelEdit} class="p-1 text-press-muted hover:text-press-text">
           <X class="w-4 h-4" />
@@ -227,19 +232,23 @@
       </div>
 
       <div>
-        <label class="block text-press-eyebrow text-press-muted mb-1" for="field-name">Name</label>
+        <label class="block text-press-eyebrow text-press-muted mb-1" for="field-name"
+          >{t("Name")}</label
+        >
         <input
           id="field-name"
           type="text"
           bind:value={editingDef.name}
           class={inputClass}
-          placeholder="e.g. Age, Genre, Status..."
+          placeholder={t("e.g. Age, Genre, Status...")}
           disabled={saving}
         />
       </div>
 
       <div>
-        <label class="block text-press-eyebrow text-press-muted mb-1" for="field-type">Type</label>
+        <label class="block text-press-eyebrow text-press-muted mb-1" for="field-type"
+          >{t("Type")}</label
+        >
         <select
           id="field-type"
           bind:value={editingDef.field_type}
@@ -247,7 +256,7 @@
           disabled={saving}
         >
           {#each FIELD_TYPES as ft}
-            <option value={ft.value}>{ft.label}</option>
+            <option value={ft.value}>{t(ft.label)}</option>
           {/each}
         </select>
       </div>
@@ -255,7 +264,7 @@
       {#if needsOptions}
         <div>
           <label class="block text-press-eyebrow text-press-muted mb-1" for="field-options">
-            Options (comma-separated)
+            {t("Options (comma-separated)")}
           </label>
           <input
             id="field-options"
@@ -263,7 +272,7 @@
             value={optionsText}
             oninput={handleOptionsChange}
             class={inputClass}
-            placeholder="Option A, Option B, Option C"
+            placeholder={t("Option A, Option B, Option C")}
             disabled={saving}
           />
         </div>
@@ -271,14 +280,14 @@
 
       <div>
         <label class="block text-press-eyebrow text-press-muted mb-1" for="field-default">
-          Default value
+          {t("Default value")}
         </label>
         <input
           id="field-default"
           type="text"
           bind:value={editingDef.default_value}
           class={inputClass}
-          placeholder="Optional"
+          placeholder={t("Optional")}
           disabled={saving}
         />
       </div>
@@ -293,7 +302,7 @@
             bind:checked={editingDef.required}
             disabled={saving}
           />
-          Required
+          {t("Required")}
         </label>
         <label
           class="inline-flex items-center gap-1.5 text-press-ui text-press-text cursor-pointer"
@@ -304,7 +313,7 @@
             bind:checked={editingDef.visible}
             disabled={saving}
           />
-          Visible
+          {t("Visible")}
         </label>
       </div>
 
@@ -314,7 +323,7 @@
           class="px-3 py-1.5 text-press-ui text-press-muted hover:text-press-text"
           disabled={saving}
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           onclick={saveDefinition}
@@ -326,7 +335,7 @@
           {:else}
             <Check class="w-3.5 h-3.5" />
           {/if}
-          {editMode === "create" ? "Add" : "Save"}
+          {t(editMode === "create" ? "Add" : "Save")}
         </button>
       </div>
     </div>

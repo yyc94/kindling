@@ -41,6 +41,7 @@ describe("ui store", () => {
     ui.referencesPanelCollapsed = false;
     ui.setExpandedBeat(null);
     ui.setBeatSaveStatus("idle");
+    ui.setLocale("en");
   });
 
   afterEach(() => {
@@ -369,6 +370,16 @@ describe("ui store", () => {
       ui.setTheme("system");
       expect(ui.theme).toBe("system");
       expect(setThemePreference).toHaveBeenCalledWith("system");
+    });
+  });
+
+  describe("locale", () => {
+    it("sets and persists the interface language", () => {
+      ui.setLocale("zh-CN");
+
+      expect(ui.locale).toBe("zh-CN");
+      expect(document.documentElement.lang).toBe("zh-CN");
+      expect(localStorageMock.setItem).toHaveBeenCalledWith("kindling:locale", "zh-CN");
     });
   });
 

@@ -13,6 +13,7 @@
   import { currentProject } from "../stores/project.svelte";
   import type { GuidanceArea } from "../stores/ui.svelte";
   import { Check, Info, EyeOff } from "lucide-svelte";
+  import { t } from "../i18n.svelte";
 
   const TOOLTIP_CONFIG: Record<
     GuidanceArea,
@@ -123,12 +124,12 @@
           <Info class="w-4 h-4 text-press-accent-text" />
         </div>
         <div>
-          <h3 id="guidance-title" class="font-medium text-press-text mb-0.5">Tip</h3>
+          <h3 id="guidance-title" class="font-medium text-press-text mb-0.5">{t("Tip")}</h3>
           <p
             id="guidance-message"
             class="font-prose text-press-text text-press-body leading-relaxed"
           >
-            {config.message}
+            {t(config.message)}
           </p>
         </div>
       </div>
@@ -137,10 +138,10 @@
           type="button"
           onclick={disableTips}
           class="flex items-center gap-1.5 text-press-eyebrow text-press-muted hover:text-press-text transition-colors"
-          title="Don't show tips again"
+          title={t("Don't show tips again")}
         >
           <EyeOff class="w-3.5 h-3.5" />
-          Disable tips
+          {t("Disable tips")}
         </button>
         <button
           type="button"
@@ -148,7 +149,7 @@
           class="flex items-center gap-1.5 px-3 py-1.5 text-press-eyebrow font-medium bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
         >
           <Check class="w-3.5 h-3.5" />
-          Got it
+          {t("Got it")}
         </button>
       </div>
     </div>

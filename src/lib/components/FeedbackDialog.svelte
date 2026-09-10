@@ -10,6 +10,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { X, Loader2, Send, Star, CheckCircle2, AlertCircle } from "lucide-svelte";
+  import { t } from "../i18n.svelte";
 
   type FeedbackType = "bug" | "feature" | "rating";
 
@@ -47,20 +48,20 @@
   /** Returns a validation message if the form is invalid, otherwise null. */
   function validate(): string | null {
     if (summary.trim().length > MAX_SUMMARY_LEN) {
-      return `Summary must be ${MAX_SUMMARY_LEN} characters or fewer.`;
+      return t("Summary must be {count} characters or fewer.", { count: MAX_SUMMARY_LEN });
     }
     if (feedbackType === "rating") {
       if (rating < 1 || rating > 5) {
-        return "Please select a rating from 1 to 5.";
+        return t("Please select a rating from 1 to 5.");
       }
       return null;
     }
     const trimmed = message.trim();
     if (!trimmed) {
-      return "Please enter a message.";
+      return t("Please enter a message.");
     }
     if (trimmed.length > MAX_MESSAGE_LEN) {
-      return `Message must be ${MAX_MESSAGE_LEN} characters or fewer.`;
+      return t("Message must be {count} characters or fewer.", { count: MAX_MESSAGE_LEN });
     }
     return null;
   }
@@ -140,13 +141,13 @@
         id="feedback-dialog-title"
         class="text-press-body-lg font-heading font-medium text-press-text"
       >
-        Send feedback
+        {t("Send feedback")}
       </h2>
       <button
         type="button"
         onclick={onClose}
         class="p-1 rounded hover:bg-press-sunken text-press-muted hover:text-press-text transition-colors"
-        aria-label="Close"
+        aria-label={t("Close")}
       >
         <X class="w-5 h-5" />
       </button>
@@ -162,14 +163,16 @@
         <div class="w-12 h-12 rounded-full bg-press-success-wash flex items-center justify-center">
           <CheckCircle2 class="w-7 h-7 text-press-success" />
         </div>
-        <p class="text-press-base font-medium text-press-text">Thanks for your feedback!</p>
-        <p class="text-press-ui text-press-muted">Your message was sent to the Kindling team.</p>
+        <p class="text-press-base font-medium text-press-text">{t("Thanks for your feedback!")}</p>
+        <p class="text-press-ui text-press-muted">
+          {t("Your message was sent to the Kindling team.")}
+        </p>
         <button
           type="button"
           onclick={onClose}
           class="mt-2 px-5 py-2 text-press-ui font-medium bg-press-accent text-press-on-accent rounded-lg hover:bg-press-accent-text transition-colors"
         >
-          Done
+          {t("Done")}
         </button>
       </div>
     {:else}
@@ -178,7 +181,7 @@
         <!-- Feedback type -->
         <fieldset>
           <legend class="block text-press-ui font-medium text-press-muted mb-2">
-            What kind of feedback?
+            {t("What kind of feedback?")}
           </legend>
           <div class="grid grid-cols-3 gap-2">
             {#each FEEDBACK_TYPES as type (type.value)}
@@ -191,7 +194,7 @@
                   ? 'border-press-accent bg-press-accent-wash text-press-text'
                   : 'border-press-border bg-press-sunken text-press-muted hover:text-press-text'}"
               >
-                {type.label}
+                {t(type.label)}
               </button>
             {/each}
           </div>
@@ -201,14 +204,14 @@
           <!-- Rating -->
           <fieldset>
             <legend class="block text-press-ui font-medium text-press-muted mb-2">
-              How would you rate Kindling?
+              {t("How would you rate Kindling?")}
             </legend>
             <div class="flex items-center gap-1">
               {#each [1, 2, 3, 4, 5] as n (n)}
                 <button
                   type="button"
                   onclick={() => (rating = n)}
-                  aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                  aria-label={t("{count} stars", { count: n })}
                   aria-pressed={rating === n}
                   class="p-1 transition-colors {n <= rating
                     ? 'text-press-accent-text'
@@ -226,14 +229,14 @@
               for="feedback-summary"
               class="block text-press-ui font-medium text-press-muted mb-1"
             >
-              Summary <span class="text-press-muted">(optional)</span>
+              {t("Summary")} <span class="text-press-muted">{t("(optional)")}</span>
             </label>
             <input
               id="feedback-summary"
               type="text"
               bind:value={summary}
               disabled={sending}
-              placeholder="A short title"
+              placeholder={t("A short title")}
               class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent"
             />
             <p
@@ -251,14 +254,14 @@
               for="feedback-message"
               class="block text-press-ui font-medium text-press-muted mb-1"
             >
-              Message
+              {t("Message")}
             </label>
             <textarea
               id="feedback-message"
               rows="4"
               bind:value={message}
               disabled={sending}
-              placeholder="Tell us what's on your mind..."
+              placeholder={t("Tell us what's on your mind...")}
               class="w-full bg-press-sunken text-press-text text-press-ui border border-press-border rounded-lg px-3 py-2 focus:outline-none focus:border-press-accent resize-none"
             ></textarea>
             <p
@@ -288,7 +291,9 @@
             <AlertCircle class="w-4 h-4 text-press-error shrink-0 mt-0.5" />
             <div class="flex-1">
               <p class="text-press-ui text-press-error">
-                Couldn't send your feedback{error ? `: ${error}` : "."}
+                {error
+                  ? t("Couldn't send your feedback: {error}", { error })
+                  : t("Couldn't send your feedback.")}
               </p>
               <button
                 type="button"
@@ -296,7 +301,7 @@
                 disabled={sending}
                 class="mt-2 text-press-ui font-medium text-press-accent-text hover:underline"
               >
-                Try again
+                {t("Try again")}
               </button>
             </div>
           </div>
@@ -311,7 +316,7 @@
           disabled={sending}
           class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors rounded-lg hover:bg-press-sunken"
         >
-          Cancel
+          {t("Cancel")}
         </button>
         <button
           type="button"
@@ -322,10 +327,10 @@
         >
           {#if sending}
             <Loader2 class="w-4 h-4 animate-spin" />
-            Sending...
+            {t("Sending...")}
           {:else}
             <Send class="w-4 h-4" />
-            Send feedback
+            {t("Send feedback")}
           {/if}
         </button>
       </div>

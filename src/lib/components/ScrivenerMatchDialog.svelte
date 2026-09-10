@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import { Loader2, Link2, AlertCircle, X } from "lucide-svelte";
   import type { ScrivenerMatchPreview } from "../types";
+  import { t } from "../i18n.svelte";
 
   let {
     projectId,
@@ -60,15 +61,17 @@
   >
     <div class="flex items-center justify-between px-6 py-4 border-b border-press-border">
       <div>
-        <h2 class="text-press-body-lg font-semibold text-press-text">Scrivener Match Preview</h2>
+        <h2 class="text-press-body-lg font-semibold text-press-text">
+          {t("Scrivener Match Preview")}
+        </h2>
         <p class="text-press-eyebrow text-press-muted mt-0.5">
-          Review how scenes will map to Scrivener documents
+          {t("Review how scenes will map to Scrivener documents")}
         </p>
       </div>
       <button
         onclick={onCancel}
         class="p-1 text-press-muted hover:text-press-text"
-        aria-label="Close"
+        aria-label={t("Close")}
       >
         <X class="w-5 h-5" />
       </button>
@@ -78,7 +81,7 @@
       {#if loading}
         <div class="flex items-center justify-center py-12">
           <Loader2 class="w-6 h-6 animate-spin text-press-accent-text" />
-          <span class="ml-2 text-press-muted">Analyzing matches...</span>
+          <span class="ml-2 text-press-muted">{t("Analyzing matches...")}</span>
         </div>
       {:else if loadError}
         <div class="flex items-center gap-2 text-press-error py-4">
@@ -88,12 +91,11 @@
       {:else}
         <div class="flex items-center gap-4 mb-4">
           <span class="text-press-eyebrow text-press-muted">
-            <span class="text-press-success font-medium">{matchedCount}</span> matched
+            {t("{count} matched", { count: matchedCount })}
           </span>
           {#if unmatchedCount > 0}
             <span class="text-press-eyebrow text-press-muted">
-              <span class="text-press-warning font-medium">{unmatchedCount}</span> unmatched (will be
-              created)
+              {t("{count} unmatched (will be created)", { count: unmatchedCount })}
             </span>
           {/if}
         </div>
@@ -125,8 +127,11 @@
                     : 'text-press-warning'}"
                 >
                   {isMatched
-                    ? `→ ${m.matched_scriv_title} (via ${m.match_method === "source_id" ? "ID" : "title"})`
-                    : "New document"}
+                    ? t("→ {title} (via {method})", {
+                        title: m.matched_scriv_title ?? "",
+                        method: t(m.match_method === "source_id" ? "ID" : "title"),
+                      })
+                    : t("New document")}
                 </p>
               </div>
             </div>
@@ -140,14 +145,14 @@
         onclick={onCancel}
         class="px-4 py-2 text-press-ui text-press-muted hover:text-press-text transition-colors"
       >
-        Cancel
+        {t("Cancel")}
       </button>
       <button
         onclick={onConfirm}
         disabled={loading || !!loadError}
         class="px-4 py-2 bg-press-accent text-press-on-accent text-press-ui font-medium rounded-lg hover:bg-press-accent-text transition-colors"
       >
-        Proceed with Export
+        {t("Proceed with Export")}
       </button>
     </div>
   </div>

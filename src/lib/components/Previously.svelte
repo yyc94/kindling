@@ -4,6 +4,7 @@
   import { currentProject } from "../stores/project.svelte";
   import { synopsisSaves } from "../stores/synopsisSaves.svelte";
   import { loadPreviousScene } from "../utils/previousScene";
+  import { t } from "../i18n.svelte";
 
   let {
     actions,
@@ -75,7 +76,11 @@
 
 {#if previous || actions || error}
   <div class="mb-6" aria-busy={loading}>
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-2" role="group" aria-label="Scene tools">
+    <div
+      class="flex flex-wrap items-center gap-x-6 gap-y-2"
+      role="group"
+      aria-label={t("Scene tools")}
+    >
       {#if previous}
         <button
           type="button"
@@ -89,7 +94,7 @@
             strokeWidth={1}
             aria-hidden="true"
           />
-          Previously
+          {t("Previously")}
         </button>
       {/if}
       {@render actions?.()}
@@ -97,7 +102,7 @@
     {#if previous && !collapsed}
       <section
         id="previously-content"
-        aria-label="Previously"
+        aria-label={t("Previously")}
         data-testid="previously"
         class="mt-4 space-y-3"
       >
@@ -119,9 +124,9 @@
       </section>
     {:else if error}
       <p role="status" class="mt-3 text-press-ui text-press-muted">
-        Could not load previous scene context.
+        {t("Could not load previous scene context.")}
         <button type="button" onclick={() => retry++} class="underline text-press-text"
-          >Retry</button
+          >{t("Retry")}</button
         >
       </p>
     {/if}

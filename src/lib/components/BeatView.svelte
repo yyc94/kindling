@@ -20,6 +20,8 @@
   import ContextMenu from "./ContextMenu.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import NovelEditor from "./NovelEditor.svelte";
+  import { countWordsInHtml } from "../utils/wordCount";
+  import { t } from "../i18n.svelte";
 
   let {
     beats,
@@ -269,6 +271,7 @@
   }
 
   function handleNewBeatKeydown(e: KeyboardEvent) {
+    if (e.isComposing) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       createBeat();
@@ -307,6 +310,7 @@
   }
 
   function handleRenameKeydown(e: KeyboardEvent) {
+    if (e.isComposing) return;
     if (e.key === "Enter") {
       e.preventDefault();
       saveRenameBeat();
@@ -327,19 +331,19 @@
 
     return [
       {
-        label: "Rename",
+        label: t("Rename"),
         icon: Pencil,
         action: () => startRenamingBeat(beat),
         disabled: false,
       },
       {
-        label: "Split at cursor",
+        label: t("Split at cursor"),
         icon: ChevronRight,
         action: () => executeSplitBeat(beat),
         disabled: !canSplit,
       },
       {
-        label: "Merge with next",
+        label: t("Merge with next"),
         icon: ChevronDown,
         action: () => {
           if (nextBeat) executeMergeBeats(beat, nextBeat);
@@ -348,7 +352,7 @@
       },
       { label: "", divider: true, action: () => {} },
       {
-        label: "Delete",
+        label: t("Delete"),
         icon: Trash2,
         action: () => {
           deleteBeatDialog = beat;
@@ -407,7 +411,7 @@
       ui.setExpandedBeat(newBeat.id);
     } catch (e) {
       console.error("Failed to split beat:", e);
-      ui.showError(`Failed to split beat: ${String(e)}`);
+      ui.showError(t("Failed to split beat: {error}", { error: String(e) }));
     } finally {
       changingBeats = false;
     }
@@ -443,7 +447,7 @@
       ui.setExpandedBeat(first.id);
     } catch (e) {
       console.error("Failed to merge beats:", e);
-      ui.showError(`Failed to merge beats: ${String(e)}`);
+      ui.showError(t("Failed to merge beats: {error}", { error: String(e) }));
     } finally {
       changingBeats = false;
     }
@@ -454,7 +458,7 @@
     // A caught/terminal save failure must also prevent transforming stale database prose.
     if (proseSaves.draftsForRecovery(projectId).some((draft) => ids.includes(draft.id))) {
       throw new Error(
-        "Save the affected beats or recover their unsaved drafts in Find and Replace first."
+        t("Save the affected beats or recover their unsaved drafts in Find and Replace first.")
       );
     }
   }
@@ -550,23 +554,22 @@
   }
 
   function getBeatWordCount(prose: string | null): number {
-    if (!prose) return 0;
-    return stripHtml(prose)
-      .split(/\s+/)
-      .filter((w) => w.length > 0).length;
+    return countWordsInHtml(prose);
   }
 </script>
 
 <section>
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">Beats</h2>
+    <h2 class="text-press-ui font-semibold text-press-text uppercase tracking-wide">
+      {t("Beats")}
+    </h2>
     {#if beats.length > 0 && !addingBeat && !isLocked}
       <button
         onclick={startAddingBeat}
         class="flex items-center gap-1 text-press-muted hover:text-press-text transition-colors text-press-ui"
       >
         <Plus class="w-3.5 h-3.5" />
-        <span>Add Beat</span>
+        <span>{t("Add Beat")}</span>
       </button>
     {/if}
   </div>
@@ -604,7 +607,7 @@
                 class:opacity-100={hoveredBeatId === beat.id}
                 role="button"
                 tabindex="-1"
-                aria-label="Drag to reorder"
+                aria-label={t("Drag to reorder")}
               >
                 <GripVertical class="w-3.5 h-3.5" />
               </div>
@@ -655,7 +658,10 @@
                   {beat.content}
                 </p>
                 {#if beat.prose || draftProse.get(beat.id)}
-                  <span class="text-press-eyebrow text-press-muted shrink-0" title="Word count">
+                  <span
+                    class="text-press-eyebrow text-press-muted shrink-0"
+                    title={t("Word count")}
+                  >
                     {getBeatWordCount(draftProse.get(beat.id)?.prose ?? beat.prose)}w
                   </span>
                 {/if}
@@ -671,7 +677,7 @@
                 class="p-1 text-press-muted hover:text-press-text transition-opacity shrink-0"
                 class:opacity-0={hoveredBeatId !== beat.id}
                 class:opacity-100={hoveredBeatId === beat.id}
-                aria-label="Beat menu"
+                aria-label={t("Beat menu")}
               >
                 <MoreVertical class="w-3.5 h-3.5" />
               </button>
@@ -690,7 +696,7 @@
                 sceneId={beat.scene_id}
                 beatId={beat.id}
                 content={beat.prose || ""}
-                placeholder={isLocked ? "Scene is locked" : "Write your prose for this beat..."}
+                placeholder={t(isLocked ? "Scene is locked" : "Write your prose for this beat...")}
                 readonly={isLocked || changingBeats}
                 saveStatus={localSaveStatus}
                 onUpdate={handleEditorUpdate(beat.id)}
@@ -723,7 +729,7 @@
           class="w-full flex items-center justify-center gap-1.5 py-2 mt-2 text-press-muted hover:text-press-text text-press-ui transition-colors rounded-lg hover:bg-press-sunken"
         >
           <Plus class="w-3.5 h-3.5" />
-          <span>Add Beat</span>
+          <span>{t("Add Beat")}</span>
         </button>
       {/if}
     </div>
@@ -733,14 +739,14 @@
       class="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-lg border border-dashed border-press-border text-press-muted hover:text-press-text hover:border-press-accent transition-colors"
     >
       <Plus class="w-4 h-4" />
-      <span class="text-press-ui">Add Your First Beat</span>
+      <span class="text-press-ui">{t("Add Your First Beat")}</span>
     </button>
   {:else if !addingBeat && isLocked}
     <div
       class="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-lg border border-dashed border-press-border text-press-muted"
     >
       <Lock class="w-4 h-4" />
-      <span class="text-press-ui">Scene is locked</span>
+      <span class="text-press-ui">{t("Scene is locked")}</span>
     </div>
   {/if}
 
@@ -750,13 +756,15 @@
       <input
         type="text"
         class="w-full bg-press-sunken rounded-lg px-4 py-3 text-press-text text-press-ui border border-press-accent focus:outline-none"
-        placeholder="Describe what happens in this beat..."
+        placeholder={t("Describe what happens in this beat...")}
         bind:value={newBeatContent}
         onkeydown={handleNewBeatKeydown}
         disabled={creatingBeat}
       />
       <div class="flex items-center justify-between mt-3">
-        <p class="text-press-muted text-press-eyebrow">Press Enter to create, Escape to cancel</p>
+        <p class="text-press-muted text-press-eyebrow">
+          {t("Press Enter to create, Escape to cancel")}
+        </p>
         <div class="flex gap-2">
           <button
             onclick={() => {
@@ -766,7 +774,7 @@
             class="px-3 py-1.5 text-press-muted hover:text-press-text text-press-ui transition-colors"
             disabled={creatingBeat}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             onclick={createBeat}
@@ -776,7 +784,7 @@
             {#if creatingBeat}
               <Loader2 class="w-4 h-4 animate-spin" />
             {:else}
-              Create Beat
+              {t("Create Beat")}
             {/if}
           </button>
         </div>
@@ -796,8 +804,10 @@
 
 {#if deleteBeatDialog}
   <ConfirmDialog
-    title="Delete Beat"
-    message="Are you sure you want to delete this beat? Any prose will be merged into the previous beat."
+    title={t("Delete Beat")}
+    message={t(
+      "Are you sure you want to delete this beat? Any prose will be merged into the previous beat."
+    )}
     onConfirm={executeDeleteBeat}
     onCancel={() => (deleteBeatDialog = null)}
   />

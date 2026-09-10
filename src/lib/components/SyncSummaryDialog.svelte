@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import type { ReimportSummary } from "../types";
+  import { t } from "../i18n.svelte";
 
   interface Props {
     summary: ReimportSummary;
@@ -35,26 +36,43 @@
   <div
     class="app-dialog-surface bg-press-surface rounded-lg p-6 max-w-md w-full mx-4 shadow-press-overlay"
   >
-    <h3 class="text-press-body-lg font-heading font-medium text-press-text mb-4">Sync Complete</h3>
+    <h3 class="text-press-body-lg font-heading font-medium text-press-text mb-4">
+      {t("Sync Complete")}
+    </h3>
     <div data-testid="sync-summary" class="text-press-muted text-press-ui space-y-2 mb-6">
       {#if !hasChanges}
-        <p>No changes were applied.</p>
+        <p>{t("No changes were applied.")}</p>
       {:else}
         {#if summary.chapters_added > 0 || summary.chapters_updated > 0}
-          <p>Chapters: {summary.chapters_added} added, {summary.chapters_updated} updated</p>
+          <p>
+            {t("Chapters: {added} added, {updated} updated", {
+              added: summary.chapters_added,
+              updated: summary.chapters_updated,
+            })}
+          </p>
         {/if}
         {#if summary.scenes_added > 0 || summary.scenes_updated > 0}
-          <p>Scenes: {summary.scenes_added} added, {summary.scenes_updated} updated</p>
+          <p>
+            {t("Scenes: {added} added, {updated} updated", {
+              added: summary.scenes_added,
+              updated: summary.scenes_updated,
+            })}
+          </p>
         {/if}
         {#if summary.beats_added > 0 || summary.beats_updated > 0}
-          <p>Beats: {summary.beats_added} added, {summary.beats_updated} updated</p>
+          <p>
+            {t("Beats: {added} added, {updated} updated", {
+              added: summary.beats_added,
+              updated: summary.beats_updated,
+            })}
+          </p>
         {/if}
         {#if summary.prose_updated}<p class="text-press-ui text-press-text">
-            {summary.prose_updated} prose item{summary.prose_updated !== 1 ? "s" : ""} updated
+            {t("{count} prose items updated", { count: summary.prose_updated })}
           </p>{/if}
         {#if summary.prose_preserved > 0}
           <p class="text-press-muted italic">
-            {summary.prose_preserved} prose item{summary.prose_preserved !== 1 ? "s" : ""} preserved
+            {t("{count} prose items preserved", { count: summary.prose_preserved })}
           </p>
         {/if}
       {/if}
@@ -64,7 +82,7 @@
       onclick={onClose}
       class="w-full px-4 py-2 bg-press-accent text-press-on-accent rounded hover:bg-press-accent-text transition-colors"
     >
-      Close
+      {t("Close")}
     </button>
   </div>
 </div>
